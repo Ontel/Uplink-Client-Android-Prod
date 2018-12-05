@@ -1,0 +1,25 @@
+{
+  "short_name": "Swift Projects",
+  "name": "Swift Projects",
+  "gcm_sender_id": "890117393102",
+  "icons": [
+    {
+      "src": "res/icon/android/xhdpi.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "res/icon/android/xxhdpi.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "res/icon/android/xxxhdpi.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait"
+}

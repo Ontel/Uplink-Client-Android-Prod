@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, width=device-width, minimal-ui, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' ws://localhost:8100 gap://ready file: https://prod.api.swiftprojects.io https://swiftprojects.io data: gap: https: blob: wss: ws://localhost:35729/livereload http://localhost:35729/livereload.js; style-src 'self' 'unsafe-inline' data: http://fonts.googleapis.com https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; media-src *; img-src * data: android-webview-video-poster:;">
+
+  <link rel="manifest" href="manifest.json">
+
+  <script src="cordova.js"></script>
+<script type="text/javascript" charSet="utf-8" src="opentok.js"></script>
+
+  <script>
+    function isIE() {
+      var ua = window.navigator.userAgent; // Check the userAgent property of the window.navigator object
+      var msie = ua.indexOf('MSIE '); // IE 10 or older
+      var trident = ua.indexOf('Trident/'); // IE 11
+
+      return (msie > 0 || trident > 0);
+    }
+
+    if (isIE()) {
+      alert('Warning, Swift Projects will not work properly in Internet Explorer. Please open the app in a modern browser like Google Chrome, Microsoft Edge, Apple Safari, or Mozilla Firefox');
+    }
+  </script>
+
+<link rel="shortcut icon" href="favicon.png"></head>
+<body ng-app="app" ng-strict-di animation="slide-left-right-ios" class="app-background theme_light">
+  <div ng-controller="AppController">
+    <ion-nav-view></ion-nav-view>
+  </div>
+<script type="text/javascript" src="index.js"></script></body>
+</html>

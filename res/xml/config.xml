@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget android-versionCode="13532" id="io.swiftworks.projects" ios-CFBundleVersion="0" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:gap="http://phonegap.com/ns/1.0">
+    <feature name="Cookies">
+        <param name="android-package" value="com.bez4pieci.cookies.Cookies" />
+    </feature>
+    <feature name="Camera">
+        <param name="android-package" value="org.apache.cordova.camera.CameraLauncher" />
+    </feature>
+    <feature name="Device">
+        <param name="android-package" value="org.apache.cordova.device.Device" />
+    </feature>
+    <feature name="File">
+        <param name="android-package" value="org.apache.cordova.file.FileUtils" />
+        <param name="onload" value="true" />
+    </feature>
+    <allow-navigation href="cdvfile:*" />
+    <feature name="FileOpener2">
+        <param name="android-package" value="io.github.pwlin.cordova.plugins.fileopener2.FileOpener2" />
+    </feature>
+    <feature name="FileTransfer">
+        <param name="android-package" value="org.apache.cordova.filetransfer.FileTransfer" />
+    </feature>
+    <feature name="Geolocation">
+        <param name="android-package" value="org.apache.cordova.geolocation.Geolocation" />
+    </feature>
+    <feature name="InAppBrowser">
+        <param name="android-package" value="org.apache.cordova.inappbrowser.InAppBrowser" />
+    </feature>
+    <feature name="Media">
+        <param name="android-package" value="org.apache.cordova.media.AudioHandler" />
+    </feature>
+    <feature name="Capture">
+        <param name="android-package" value="org.apache.cordova.mediacapture.Capture" />
+    </feature>
+    <feature name="NetworkStatus">
+        <param name="android-package" value="org.apache.cordova.networkinformation.NetworkManager" />
+    </feature>
+    <feature name="SplashScreen">
+        <param name="android-package" value="org.apache.cordova.splashscreen.SplashScreen" />
+        <param name="onload" value="true" />
+    </feature>
+    <feature name="StatusBar">
+        <param name="android-package" value="org.apache.cordova.statusbar.StatusBar" />
+        <param name="onload" value="true" />
+    </feature>
+    <feature name="Whitelist">
+        <param name="android-package" value="org.apache.cordova.whitelist.WhitelistPlugin" />
+        <param name="onload" value="true" />
+    </feature>
+    <feature name="Keyboard">
+        <param name="android-package" value="io.ionic.keyboard.IonicKeyboard" />
+        <param name="onload" value="true" />
+    </feature>
+    <feature name="PushNotification">
+        <param name="android-package" value="com.adobe.phonegap.push.PushPlugin" />
+    </feature>
+    <feature name="OpenTokPlugin">
+        <param name="android-package" value="com.tokbox.cordova.OpenTokAndroidPlugin" />
+        <param name="onload" value="true" />
+    </feature>
+    <name>Swift Projects</name>
+    <description>
+    Swift Projects allows companies to design and automate workflows, closeout and QA live, and manage millions of interactions between people, forms, and files from any device.
+  </description>
+    <author email="hello@ontel.co" href="http://ontel.co">
+    Ontel Development Team
+  </author>
+    <content src="index.html" />
+    <access origin="https://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="geo:*" />
+    <allow-navigation href="data:*" />
+    <allow-navigation href="https://*/*" />
+    <icon src="icon.png" />
+    <icon platform="android" qualifier="ldpi" src="res/icon/android/ldpi.png" />
+    <icon platform="android" qualifier="mdpi" src="res/icon/android/mdpi.png" />
+    <icon platform="android" qualifier="hdpi" src="res/icon/android/hdpi.png" />
+    <icon platform="android" qualifier="xhdpi" src="res/icon/android/xhdpi.png" />
+    <icon platform="android" qualifier="xxhdpi" src="res/icon/android/xxhdpi.png" />
+    <icon platform="android" qualifier="xxxhdpi" src="res/icon/android/xxxhdpi.png" />
+    <splash density="hdpi" src="res/screen/android/hdpi.png" />
+    <splash density="ldpi" src="res/screen/android/ldpi.png" />
+    <splash density="mdpi" src="res/screen/android/mdpi.png" />
+    <splash density="xhdpi" src="res/screen/android/xhdpi.png" />
+    <splash density="land-xxhdpi" src="res/screen/android/landscape-xxhdpi.png" />
+    <splash density="port-xxhdpi" src="res/screen/android/portrait-xxhdpi.png" />
+    <preference name="loglevel" value="DEBUG" />
+    <preference name="phonegap-version" value="cli-7.1.0" />
+    <preference name="android-build-tool" value="gradle" />
+    <preference name="orientation" value="portrait" />
+    <preference name="target-device" value="universal" />
+    <preference name="webviewbounce" value="false" />
+    <preference name="UIWebViewBounce" value="false" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="BackupWebStorage" value="none" />
+    <preference name="CameraUsesGeolocation" value="false" />
+    <preference name="prerendered-icon" value="true" />
+    <preference name="SplashScreen" value="screen" />
+    <preference name="SplashScreenDelay" value="50000" />
+    <preference name="FadeSplashScreenDuration" value="0" />
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+    <preference name="android-minSdkVersion" value="16" />
+    <preference name="loadUrlTimeoutValue" value="60000" />
+</widget>

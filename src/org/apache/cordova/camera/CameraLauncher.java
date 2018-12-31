@@ -87,6 +87,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
     private static final int JPEG = 0;                  // Take a picture of type JPEG
     private static final int PNG = 1;                   // Take a picture of type PNG
+    private static final String JPEG_EXTENSION = ".jpg";
+    private static final String PNG_EXTENSION = ".png";
+    private static final String PNG_MIME_TYPE = "image/png";
+    private static final String JPEG_MIME_TYPE = "image/jpeg";
     private static final String GET_PICTURE = "Get Picture";
     private static final String GET_VIDEO = "Get Video";
     private static final String GET_All = "Get All";
@@ -99,6 +103,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
     //Where did this come from?
     private static final int CROP_CAMERA = 100;
+
+    private static final String TIME_FORMAT = "yyyyMMdd_HHmmss";
 
     private int mQuality;                   // Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
     private int targetWidth;                // desired width of the image
@@ -113,7 +119,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private boolean orientationCorrected;   // Has the picture's orientation been corrected
     private boolean allowEdit;              // Should we allow the user to crop the image.
 
-    protected final static String[] permissions = { Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE };
+    protected final static String[] permissions = { Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE };
 
     public CallbackContext callbackContext;
     private int numPics;
@@ -245,7 +251,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param encodingType           Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
      */
     public void callTakePicture(int returnType, int encodingType) {
-        boolean saveAlbumPermission = PermissionHelper.hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        boolean saveAlbumPermission = PermissionHelper.hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                && PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         boolean takePicturePermission = PermissionHelper.hasPermission(this, Manifest.permission.CAMERA);
 
         // CB-10120: The CAMERA permission does not need to be requested unless it is declared
@@ -276,7 +283,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         } else if (saveAlbumPermission && !takePicturePermission) {
             PermissionHelper.requestPermission(this, TAKE_PIC_SEC, Manifest.permission.CAMERA);
         } else if (!saveAlbumPermission && takePicturePermission) {
-            PermissionHelper.requestPermission(this, TAKE_PIC_SEC, Manifest.permission.READ_EXTERNAL_STORAGE);
+            PermissionHelper.requestPermissions(this, TAKE_PIC_SEC,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE});
         } else {
             PermissionHelper.requestPermissions(this, TAKE_PIC_SEC, permissions);
         }
@@ -339,9 +347,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         }
 
         if (encodingType == JPEG) {
-            fileName = fileName + ".jpg";
+            fileName = fileName + JPEG_EXTENSION;
         } else if (encodingType == PNG) {
-            fileName = fileName + ".png";
+            fileName = fileName + PNG_EXTENSION;
         } else {
             throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
@@ -597,10 +605,11 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     }
 
     private String getPicturesPath() {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "IMG_" + timeStamp + (this.encodingType == JPEG ? ".jpg" : ".png");
+        String timeStamp = new SimpleDateFormat(TIME_FORMAT).format(new Date());
+        String imageFileName = "IMG_" + timeStamp + (this.encodingType == JPEG ? JPEG_EXTENSION : PNG_EXTENSION);
         File storageDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES);
+        storageDir.mkdirs();
         String galleryPath = storageDir.getAbsolutePath() + "/" + imageFileName;
         return galleryPath;
     }
@@ -618,8 +627,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @return String String value of mime type or empty string if mime type is not supported
      */
     private String getMimetypeForFormat(int outputFormat) {
-        if (outputFormat == PNG) return "image/png";
-        if (outputFormat == JPEG) return "image/jpeg";
+        if (outputFormat == PNG) return PNG_MIME_TYPE;
+        if (outputFormat == JPEG) return JPEG_MIME_TYPE;
         return "";
     }
 
@@ -633,7 +642,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 realPath.substring(realPath.lastIndexOf('/') + 1) :
                 "modified." + (this.encodingType == JPEG ? "jpg" : "png");
 
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat(TIME_FORMAT).format(new Date());
         //String fileName = "IMG_" + timeStamp + (this.encodingType == JPEG ? ".jpg" : ".png");
         String modifiedPath = getTempDirectoryPath() + "/" + fileName;
 
@@ -682,15 +691,15 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         String fileLocation = FileHelper.getRealPath(uri, this.cordova);
         LOG.d(LOG_TAG, "File locaton is: " + fileLocation);
 
-        // If you ask for video or all media type you will automatically get back a file URI
-        // and there will be no attempt to resize any returned data
-        if (this.mediaType != PICTURE) {
+        String uriString = uri.toString();
+        String mimeType = FileHelper.getMimeType(uriString, this.cordova);
+
+        // If you ask for video or the selected file doesn't have JPEG or PNG mime type
+        //  there will be no attempt to resize any returned data
+        if (this.mediaType == VIDEO || !(JPEG_MIME_TYPE.equalsIgnoreCase(mimeType) || PNG_MIME_TYPE.equalsIgnoreCase(mimeType))) {
             this.callbackContext.success(fileLocation);
         }
         else {
-            String uriString = uri.toString();
-            // Get the path to the image. Makes loading so much easier.
-            String mimeType = FileHelper.getMimeType(uriString, this.cordova);
 
             // This is a special case to just return the path as no scaling,
             // rotating, nor compressing needs to be done
@@ -783,7 +792,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             }// If cancelled
             else if (resultCode == Activity.RESULT_CANCELED) {
-                this.failPicture("Camera cancelled.");
+                this.failPicture("No Image Selected");
             }
 
             // If something else
@@ -812,7 +821,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             // If cancelled
             else if (resultCode == Activity.RESULT_CANCELED) {
-                this.failPicture("Camera cancelled.");
+                this.failPicture("No Image Selected");
             }
 
             // If something else
@@ -831,7 +840,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     }
                 });
             } else if (resultCode == Activity.RESULT_CANCELED) {
-                this.failPicture("Selection cancelled.");
+                this.failPicture("No Image Selected");
             } else {
                 this.failPicture("Selection did not complete!");
             }
@@ -849,7 +858,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             return 0;
         }
     }
-    
+
     /**
      * Write an inputstream to local disk
      *
@@ -909,7 +918,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      */
     private Uri getUriFromMediaStore() {
         ContentValues values = new ContentValues();
-        values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, JPEG_MIME_TYPE);
         Uri uri;
         try {
             uri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -940,7 +949,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             try {
                 fileStream = FileHelper.getInputStreamFromUriString(imageUrl, cordova);
                 image = BitmapFactory.decodeStream(fileStream);
-            } finally {
+            }  catch (OutOfMemoryError e) {
+                callbackContext.error(e.getLocalizedMessage());
+            } catch (Exception e){
+                callbackContext.error(e.getLocalizedMessage());
+            }
+            finally {
                 if (fileStream != null) {
                     try {
                         fileStream.close();
@@ -967,14 +981,14 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             InputStream fileStream = FileHelper.getInputStreamFromUriString(imageUrl, cordova);
             if (fileStream != null) {
                 // Generate a temporary file
-                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                String fileName = "IMG_" + timeStamp + (this.encodingType == JPEG ? ".jpg" : ".png");
+                String timeStamp = new SimpleDateFormat(TIME_FORMAT).format(new Date());
+                String fileName = "IMG_" + timeStamp + (this.encodingType == JPEG ? JPEG_EXTENSION : PNG_EXTENSION);
                 localFile = new File(getTempDirectoryPath() + fileName);
                 galleryUri = Uri.fromFile(localFile);
                 writeUncompressedImage(fileStream, galleryUri);
                 try {
                     String mimeType = FileHelper.getMimeType(imageUrl.toString(), cordova);
-                    if ("image/jpeg".equalsIgnoreCase(mimeType)) {
+                    if (JPEG_MIME_TYPE.equalsIgnoreCase(mimeType)) {
                         //  ExifInterface doesn't like the file:// prefix
                         String filePath = galleryUri.toString().replace("file://", "");
                         // read exifData of source

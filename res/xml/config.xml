@@ -58,13 +58,16 @@
         <param name="android-package" value="com.tokbox.cordova.OpenTokAndroidPlugin" />
         <param name="onload" value="true" />
     </feature>
+    <feature name="SaveImage">
+        <param name="android-package" value="com.quiply.cordova.saveimage.SaveImage" />
+    </feature>
     <name>Swift Projects</name>
     <description>
-    Swift Projects allows companies to design and automate workflows, closeout and QA live, and manage millions of interactions between people, forms, and files from any device.
-  </description>
+        Swift Projects allows companies to design and automate workflows, closeout and QA live, and manage millions of interactions between people, forms, and files from any device.
+    </description>
     <author email="hello@ontel.co" href="http://ontel.co">
-    Ontel Development Team
-  </author>
+        Ontel Development Team
+    </author>
     <content src="index.html" />
     <access origin="https://*/*" />
     <allow-intent href="https://*/*" />

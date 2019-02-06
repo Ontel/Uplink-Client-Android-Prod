@@ -135,6 +135,10 @@
             {
               "xml": "<feature name=\"PushNotification\"><param name=\"android-package\" value=\"com.adobe.phonegap.push.PushPlugin\" /></feature>",
               "count": 1
+            },
+            {
+              "xml": "<feature name=\"SaveImage\"><param name=\"android-package\" value=\"com.quiply.cordova.saveimage.SaveImage\" /></feature>",
+              "count": 1
             }
           ]
         }
@@ -144,7 +148,7 @@
           "/*": [
             {
               "xml": "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",
-              "count": 5
+              "count": 6
             },
             {
               "xml": "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\" />",
@@ -345,6 +349,9 @@
     "phonegap-plugin-push": {
       "SENDER_ID": "890117393102",
       "PACKAGE_NAME": "io.swiftworks.projects"
+    },
+    "cordova-plugin-save-image": {
+      "PACKAGE_NAME": "co.ontel.uplink"
     }
   },
   "dependent_plugins": {},
@@ -750,6 +757,14 @@
       "clobbers": [
         "PushNotification"
       ]
+    },
+    {
+      "id": "cordova-plugin-save-image.SaveImage",
+      "file": "plugins/cordova-plugin-save-image/www/SaveImage.js",
+      "pluginId": "cordova-plugin-save-image",
+      "clobbers": [
+        "cordova.plugins.imagesaver"
+      ]
     }
   ],
   "plugin_metadata": {
@@ -769,6 +784,7 @@
     "cordova-plugin-opentok": "3.4.0",
     "com.bez4pieci.cookies": "0.0.1",
     "ionic-plugin-keyboard": "2.2.1",
-    "phonegap-plugin-push": "1.7.0"
+    "phonegap-plugin-push": "1.7.0",
+    "cordova-plugin-save-image": "0.3.0"
   }
 }

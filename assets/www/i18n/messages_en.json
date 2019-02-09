@@ -867,6 +867,7 @@
   "app.settings.camera.photo.size.label": "Photo size",
   "app.settings.camera.photo.quality.label": "JPG quality",
   "app.settings.camera.orientation.fix.label": "Change orientation mode",
+  "app.settings.camera.copy.gallery.label": "Save Photos to Gallery",
   "app.settings.audio.n10ns.heading.label": "Sound Notifications",
   "app.settings.audio.n10ns.enable.label": "Enable Sound Notifications",
   "app.settings.audio.n10ns.volume.label": "Volume",

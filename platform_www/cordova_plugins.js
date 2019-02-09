@@ -401,6 +401,14 @@ module.exports = [
     "clobbers": [
       "PushNotification"
     ]
+  },
+  {
+    "id": "cordova-plugin-save-image.SaveImage",
+    "file": "plugins/cordova-plugin-save-image/www/SaveImage.js",
+    "pluginId": "cordova-plugin-save-image",
+    "clobbers": [
+      "cordova.plugins.imagesaver"
+    ]
   }
 ];
 module.exports.metadata = 
@@ -422,7 +430,8 @@ module.exports.metadata =
   "cordova-plugin-opentok": "3.4.0",
   "com.bez4pieci.cookies": "0.0.1",
   "ionic-plugin-keyboard": "2.2.1",
-  "phonegap-plugin-push": "1.7.0"
+  "phonegap-plugin-push": "1.7.0",
+  "cordova-plugin-save-image": "0.3.0"
 };
 // BOTTOM OF METADATA
 });

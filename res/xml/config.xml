@@ -71,6 +71,9 @@
     <feature name="ImagePicker">
         <param name="android-package" value="org.apache.cordova.imagepicker.ImagePicker" />
     </feature>
+    <feature name="CordovaHttpPlugin">
+        <param name="android-package" value="com.silkimen.cordovahttp.CordovaHttpPlugin" />
+    </feature>
     <name>Swift Projects</name>
     <description>
         Swift Projects allows companies to design and automate workflows, closeout and QA live, and manage millions of interactions between people, forms, and files from any device.

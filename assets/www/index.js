@@ -14229,7 +14229,7 @@ var LOG_LEVEL = exports.LOG_LEVEL = "error";
 var FILESTACK_API_KEY = exports.FILESTACK_API_KEY = "AuQgLT2OxTXCD1c8pfdk9z";
 var FILESTACK_STORE = exports.FILESTACK_STORE = "io-swiftworks-projects-filestack";
 var CLIENT_VERSION = exports.CLIENT_VERSION = "1.2.6";
-var BUILD_DATE = exports.BUILD_DATE = "2025-04-07T13:40:53.680Z";
+var BUILD_DATE = exports.BUILD_DATE = "2025-04-09T15:11:38.281Z";
 var ENVIRONMENT = exports.ENVIRONMENT = "production";
 var FBURL = exports.FBURL = "https://swift-projects.firebaseio.com";
 var APP_NAME = exports.APP_NAME = "Swift Projects";
@@ -14688,7 +14688,7 @@ exports.BASE_REDUX_LIST_OPTIONS = undefined;
 
 var _constants = __webpack_require__(27);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _state = __webpack_require__(128);
 
@@ -15536,7 +15536,7 @@ var _isFunction2 = _interopRequireDefault(_isFunction);
 
 __webpack_require__(290);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(25);
 
@@ -17127,6 +17127,98 @@ exports.f = __webpack_require__(74) ? Object.defineProperty : function definePro
 /* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
+// 7.1.13 ToObject(argument)
+var defined = __webpack_require__(159);
+module.exports = function (it) {
+  return Object(defined(it));
+};
+
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var Observable_1 = __webpack_require__(1);
+var debounceTime_1 = __webpack_require__(1965);
+Observable_1.Observable.prototype.debounceTime = debounceTime_1.debounceTime;
+
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var Observable_1 = __webpack_require__(1);
+var startWith_1 = __webpack_require__(2067);
+Observable_1.Observable.prototype.startWith = startWith_1.startWith;
+
+
+/***/ }),
+/* 83 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _config = __webpack_require__(2239);
+
+Object.keys(_config).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _config[key];
+    }
+  });
+});
+
+var _firebase = __webpack_require__(2240);
+
+Object.keys(_firebase).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _firebase[key];
+    }
+  });
+});
+
+var _lock = __webpack_require__(2241);
+
+Object.keys(_lock).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _lock[key];
+    }
+  });
+});
+
+var _logout = __webpack_require__(2242);
+
+Object.keys(_logout).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _logout[key];
+    }
+  });
+});
+
+/***/ }),
+/* 84 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global, Promise) {
 
@@ -17935,98 +18027,6 @@ function sanitizePath(path) {
   return list.join('/');
 }
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36), __webpack_require__(7)))
-
-/***/ }),
-/* 81 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.1.13 ToObject(argument)
-var defined = __webpack_require__(159);
-module.exports = function (it) {
-  return Object(defined(it));
-};
-
-
-/***/ }),
-/* 82 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var Observable_1 = __webpack_require__(1);
-var debounceTime_1 = __webpack_require__(1965);
-Observable_1.Observable.prototype.debounceTime = debounceTime_1.debounceTime;
-
-
-/***/ }),
-/* 83 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var Observable_1 = __webpack_require__(1);
-var startWith_1 = __webpack_require__(2067);
-Observable_1.Observable.prototype.startWith = startWith_1.startWith;
-
-
-/***/ }),
-/* 84 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _config = __webpack_require__(2239);
-
-Object.keys(_config).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _config[key];
-    }
-  });
-});
-
-var _firebase = __webpack_require__(2240);
-
-Object.keys(_firebase).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _firebase[key];
-    }
-  });
-});
-
-var _lock = __webpack_require__(2241);
-
-Object.keys(_lock).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _lock[key];
-    }
-  });
-});
-
-var _logout = __webpack_require__(2242);
-
-Object.keys(_logout).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _logout[key];
-    }
-  });
-});
 
 /***/ }),
 /* 85 */
@@ -20213,7 +20213,7 @@ __webpack_require__(1957);
 __webpack_require__(1959);
 __webpack_require__(1961);
 __webpack_require__(1963);
-__webpack_require__(82);
+__webpack_require__(81);
 __webpack_require__(1966);
 __webpack_require__(56);
 __webpack_require__(1969);
@@ -20275,7 +20275,7 @@ __webpack_require__(184);
 __webpack_require__(2061);
 __webpack_require__(2063);
 __webpack_require__(2065);
-__webpack_require__(83);
+__webpack_require__(82);
 __webpack_require__(2068);
 __webpack_require__(2075);
 __webpack_require__(26);
@@ -21422,7 +21422,7 @@ exports.f = __webpack_require__(74) ? gOPD : function getOwnPropertyDescriptor(O
 
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has = __webpack_require__(137);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var IE_PROTO = __webpack_require__(569)('IE_PROTO');
 var ObjectProto = Object.prototype;
 
@@ -22769,7 +22769,7 @@ module.exports = function (KEY, exec) {
 // 6 -> Array#findIndex
 var ctx = __webpack_require__(151);
 var IObject = __webpack_require__(343);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toLength = __webpack_require__(69);
 var asc = __webpack_require__(585);
 module.exports = function (TYPE, $create) {
@@ -23588,7 +23588,7 @@ if (__webpack_require__(74)) {
   var has = __webpack_require__(137);
   var classof = __webpack_require__(275);
   var isObject = __webpack_require__(52);
-  var toObject = __webpack_require__(81);
+  var toObject = __webpack_require__(80);
   var isArrayIter = __webpack_require__(582);
   var create = __webpack_require__(238);
   var getPrototypeOf = __webpack_require__(140);
@@ -24326,8 +24326,6 @@ var _ajax = __webpack_require__(642);
 
 var _mimeTypes = __webpack_require__(1156);
 
-var _DeviceServicesCordova = __webpack_require__(80);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -24437,18 +24435,6 @@ var AjaxFactory = exports.AjaxFactory = function () {
     key: 'sendRequest',
     value: function sendRequest(request, rootState) {
       // console.log('AjaxFactory.sendRequest', request);
-      if ((0, _DeviceServicesCordova.isWebView)()) {
-        var config = this.getRequestConfig(request, rootState);
-
-        console.log(cordova.plugins);
-
-        // return cordova.plugin.http.sendRequest(config.url, config, function (response) {
-        //   console.log(response.status);
-        // }, function (response) {
-        //   console.log(response.error);
-        // });
-      }
-
       return this.ajax(this.getRequestConfig(request, rootState)); //.do(r => console.log('AjaxFactory.response', r));
     }
 
@@ -26210,7 +26196,7 @@ __webpack_require__(11);
 
 __webpack_require__(289);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -34098,7 +34084,7 @@ var _reduxObservableList = __webpack_require__(22);
 
 var _GpsStatus = __webpack_require__(393);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _trackLocationActions = __webpack_require__(295);
 
@@ -60247,7 +60233,7 @@ module.exports = function (original, length) {
 "use strict";
 // 22.1.3.6 Array.prototype.fill(value, start = 0, end = this.length)
 
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toAbsoluteIndex = __webpack_require__(237);
 var toLength = __webpack_require__(69);
 module.exports = function fill(value /* , start = 0, end = @length */) {
@@ -87172,7 +87158,7 @@ var _reduxObservableList = __webpack_require__(22);
 
 var _constants = __webpack_require__(27);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -87645,7 +87631,7 @@ var _actions = __webpack_require__(62);
 
 var _state = __webpack_require__(20);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -88232,7 +88218,7 @@ var DESCRIPTORS = __webpack_require__(74);
 var getKeys = __webpack_require__(236);
 var gOPS = __webpack_require__(435);
 var pIE = __webpack_require__(344);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var IObject = __webpack_require__(343);
 var $assign = Object.assign;
 
@@ -88445,7 +88431,7 @@ module.exports = function (iterator, fn, value, entries) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var aFunction = __webpack_require__(108);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var IObject = __webpack_require__(343);
 var toLength = __webpack_require__(69);
 
@@ -88481,7 +88467,7 @@ module.exports = function (that, callbackfn, aLen, memo, isRight) {
 "use strict";
 // 22.1.3.3 Array.prototype.copyWithin(target, start, end = this.length)
 
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toAbsoluteIndex = __webpack_require__(237);
 var toLength = __webpack_require__(69);
 
@@ -119270,7 +119256,7 @@ var _rxUtils = __webpack_require__(9);
 
 var _ToastTypes = __webpack_require__(685);
 
-var _actions3 = __webpack_require__(84);
+var _actions3 = __webpack_require__(83);
 
 var _reducers = __webpack_require__(78);
 
@@ -119412,7 +119398,7 @@ exports.onStateGoPostAuth = onStateGoPostAuth;
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _logger = __webpack_require__(192);
 
@@ -120371,7 +120357,7 @@ __webpack_require__(77);
 
 __webpack_require__(290);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -129007,7 +128993,7 @@ __webpack_require__(183);
 
 __webpack_require__(184);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 var _BehaviorSubject = __webpack_require__(491);
 
@@ -136377,7 +136363,7 @@ var _utils = __webpack_require__(96);
 
 var _router = __webpack_require__(87);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -137017,7 +137003,7 @@ __webpack_require__(290);
 
 __webpack_require__(26);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(25);
 
@@ -137119,7 +137105,7 @@ var _recompose = __webpack_require__(21);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -137127,7 +137113,7 @@ var _Observable = __webpack_require__(1);
 
 var _angularUtils = __webpack_require__(45);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _FileDomain = __webpack_require__(417);
 
@@ -137266,7 +137252,7 @@ var _rxjs = __webpack_require__(126);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(56);
 
@@ -143184,7 +143170,7 @@ var enumKeys = __webpack_require__(1501);
 var isArray = __webpack_require__(436);
 var anObject = __webpack_require__(38);
 var isObject = __webpack_require__(52);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toIObject = __webpack_require__(138);
 var toPrimitive = __webpack_require__(158);
 var createDesc = __webpack_require__(234);
@@ -143488,7 +143474,7 @@ __webpack_require__(160)('getOwnPropertyDescriptor', function () {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.9 Object.getPrototypeOf(O)
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var $getPrototypeOf = __webpack_require__(140);
 
 __webpack_require__(160)('getPrototypeOf', function () {
@@ -143503,7 +143489,7 @@ __webpack_require__(160)('getPrototypeOf', function () {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.14 Object.keys(O)
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var $keys = __webpack_require__(236);
 
 __webpack_require__(160)('keys', function () {
@@ -144720,7 +144706,7 @@ $export($export.S, 'Date', { now: function () { return new Date().getTime(); } }
 "use strict";
 
 var $export = __webpack_require__(8);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toPrimitive = __webpack_require__(158);
 
 $export($export.P + $export.F * __webpack_require__(50)(function () {
@@ -144845,7 +144831,7 @@ $export($export.S, 'Array', { isArray: __webpack_require__(436) });
 
 var ctx = __webpack_require__(151);
 var $export = __webpack_require__(8);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var call = __webpack_require__(827);
 var isArrayIter = __webpack_require__(582);
 var toLength = __webpack_require__(69);
@@ -144969,7 +144955,7 @@ $export($export.P + $export.F * __webpack_require__(50)(function () {
 
 var $export = __webpack_require__(8);
 var aFunction = __webpack_require__(108);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var fails = __webpack_require__(50);
 var $sort = [].sort;
 var test = [1, 2, 3];
@@ -145393,7 +145379,7 @@ __webpack_require__(441)('match', 1, function (defined, MATCH, $match, maybeCall
 
 
 var anObject = __webpack_require__(38);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toLength = __webpack_require__(69);
 var toInteger = __webpack_require__(153);
 var advanceStringIndex = __webpack_require__(589);
@@ -146529,7 +146515,7 @@ __webpack_require__(202)('includes');
 // https://tc39.github.io/proposal-flatMap/#sec-Array.prototype.flatMap
 var $export = __webpack_require__(8);
 var flattenIntoArray = __webpack_require__(842);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toLength = __webpack_require__(69);
 var aFunction = __webpack_require__(108);
 var arraySpeciesCreate = __webpack_require__(585);
@@ -146558,7 +146544,7 @@ __webpack_require__(202)('flatMap');
 // https://tc39.github.io/proposal-flatMap/#sec-Array.prototype.flatten
 var $export = __webpack_require__(8);
 var flattenIntoArray = __webpack_require__(842);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toLength = __webpack_require__(69);
 var toInteger = __webpack_require__(153);
 var arraySpeciesCreate = __webpack_require__(585);
@@ -146785,7 +146771,7 @@ $export($export.S, 'Object', {
 "use strict";
 
 var $export = __webpack_require__(8);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var aFunction = __webpack_require__(108);
 var $defineProperty = __webpack_require__(79);
 
@@ -146804,7 +146790,7 @@ __webpack_require__(74) && $export($export.P + __webpack_require__(445), 'Object
 "use strict";
 
 var $export = __webpack_require__(8);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var aFunction = __webpack_require__(108);
 var $defineProperty = __webpack_require__(79);
 
@@ -146823,7 +146809,7 @@ __webpack_require__(74) && $export($export.P + __webpack_require__(445), 'Object
 "use strict";
 
 var $export = __webpack_require__(8);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toPrimitive = __webpack_require__(158);
 var getPrototypeOf = __webpack_require__(140);
 var getOwnPropertyDescriptor = __webpack_require__(139).f;
@@ -146848,7 +146834,7 @@ __webpack_require__(74) && $export($export.P + __webpack_require__(445), 'Object
 "use strict";
 
 var $export = __webpack_require__(8);
-var toObject = __webpack_require__(81);
+var toObject = __webpack_require__(80);
 var toPrimitive = __webpack_require__(158);
 var getPrototypeOf = __webpack_require__(140);
 var getOwnPropertyDescriptor = __webpack_require__(139).f;
@@ -264517,7 +264503,7 @@ __webpack_require__(485);
 
 __webpack_require__(33);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(19);
 
@@ -264533,7 +264519,7 @@ __webpack_require__(289);
 
 __webpack_require__(652);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -265803,7 +265789,7 @@ __webpack_require__(485);
 
 __webpack_require__(33);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(19);
 
@@ -265819,7 +265805,7 @@ __webpack_require__(289);
 
 __webpack_require__(652);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -275154,7 +275140,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 exports.authData = authData;
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var initialState = {
   profile: null,
@@ -276601,7 +276587,7 @@ var _ReduxUtils = __webpack_require__(6);
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _actions2 = __webpack_require__(54);
 
@@ -277436,7 +277422,7 @@ var _rxUtils = __webpack_require__(9);
 
 var _constants = __webpack_require__(27);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _actions2 = __webpack_require__(54);
 
@@ -278218,7 +278204,7 @@ var _AssetDomain = __webpack_require__(188);
 
 var _AssetProjectDomain = __webpack_require__(169);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _actions2 = __webpack_require__(54);
 
@@ -278840,7 +278826,7 @@ __webpack_require__(141);
 
 __webpack_require__(61);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(25);
 
@@ -278991,7 +278977,7 @@ var _rxjs = __webpack_require__(126);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -280298,7 +280284,7 @@ var _authKeys = __webpack_require__(305);
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _logger = __webpack_require__(192);
 
@@ -280469,7 +280455,7 @@ var _authKeys = __webpack_require__(305);
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _refreshUser = __webpack_require__(381);
 
@@ -280642,7 +280628,7 @@ var _rxUtils = __webpack_require__(9);
 
 var _reqListConfig = __webpack_require__(306);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _reducers = __webpack_require__(78);
 
@@ -280829,7 +280815,7 @@ __webpack_require__(26);
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _router = __webpack_require__(257);
 
@@ -280904,7 +280890,7 @@ var _AbstractEpics2 = __webpack_require__(116);
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _loginUser = __webpack_require__(379);
 
@@ -281056,7 +281042,7 @@ __webpack_require__(34);
 
 __webpack_require__(11);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -281196,7 +281182,7 @@ var _reduxList = __webpack_require__(35);
 
 var _actions = __webpack_require__(187);
 
-var _actions2 = __webpack_require__(84);
+var _actions2 = __webpack_require__(83);
 
 var _logger = __webpack_require__(192);
 
@@ -281804,7 +281790,7 @@ var _reduxObservableList = __webpack_require__(22);
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _actions2 = __webpack_require__(686);
 
@@ -292140,7 +292126,7 @@ __webpack_require__(77);
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _actions2 = __webpack_require__(686);
 
@@ -324540,7 +324526,7 @@ __webpack_require__(289);
 
 __webpack_require__(290);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -326545,7 +326531,7 @@ __webpack_require__(11);
 
 __webpack_require__(490);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -328006,9 +327992,9 @@ var _rxUtils = __webpack_require__(9);
 
 var _GeoCoder = __webpack_require__(2570);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _state = __webpack_require__(411);
 
@@ -328970,7 +328956,7 @@ var _network = __webpack_require__(2577);
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _reducers = __webpack_require__(78);
 
@@ -331120,9 +331106,9 @@ __webpack_require__(127);
 
 var _rxUtils = __webpack_require__(9);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _trackLocationActions = __webpack_require__(295);
 
@@ -331905,7 +331891,7 @@ __webpack_require__(34);
 
 __webpack_require__(11);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -332022,7 +332008,7 @@ __webpack_require__(34);
 
 __webpack_require__(11);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -413137,7 +413123,7 @@ __webpack_require__(61);
 
 __webpack_require__(355);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 var _Properties = __webpack_require__(756);
 
@@ -416122,7 +416108,7 @@ var _mimeTypes2 = _interopRequireDefault(_mimeTypes);
 
 var _constants = __webpack_require__(27);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _NoteState = __webpack_require__(174);
 
@@ -416490,7 +416476,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.FilePickerFactory = FilePickerFactory;
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _constants = __webpack_require__(27);
 
@@ -417011,7 +416997,7 @@ var _isUndefined2 = _interopRequireDefault(_isUndefined);
 
 var _recompose = __webpack_require__(21);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 var _constants = __webpack_require__(27);
 
@@ -429975,7 +429961,7 @@ function decorateService($delegate, $window, $timeout) {
 "use strict";
 
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var angular = __webpack_require__(4);
 
@@ -433357,7 +433343,7 @@ var _Observable = __webpack_require__(1);
 
 var _viewEvents = __webpack_require__(53);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _rxUtils = __webpack_require__(9);
 
@@ -442899,7 +442885,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -447110,7 +447096,7 @@ __webpack_require__(11);
 
 __webpack_require__(290);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(25);
 
@@ -448012,7 +447998,7 @@ var _recompose = __webpack_require__(21);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -449799,7 +449785,7 @@ __webpack_require__(19);
 
 __webpack_require__(11);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(25);
 
@@ -449813,7 +449799,7 @@ var _viewEvents = __webpack_require__(53);
 
 var _rxUtils = __webpack_require__(9);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _AuthModalMode = __webpack_require__(500);
 
@@ -450021,7 +450007,7 @@ __webpack_require__(19);
 
 __webpack_require__(11);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(25);
 
@@ -450911,7 +450897,7 @@ exports.AuthServiceProvider = AuthServiceProvider;
 
 var _GlobalEvents = __webpack_require__(761);
 
-var _actions = __webpack_require__(84);
+var _actions = __webpack_require__(83);
 
 var _state = __webpack_require__(128);
 
@@ -461074,7 +461060,7 @@ var _rxjs = __webpack_require__(126);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -489495,7 +489481,7 @@ __webpack_require__(70);
 
 __webpack_require__(41);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(11);
 
@@ -494351,7 +494337,7 @@ var _router = __webpack_require__(87);
 
 var _viewEvents = __webpack_require__(53);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -497013,7 +496999,7 @@ var _recompose = __webpack_require__(21);
 
 __webpack_require__(41);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 var _reactUtils = __webpack_require__(47);
 
@@ -497571,7 +497557,7 @@ var _react2 = _interopRequireDefault(_react);
 
 __webpack_require__(41);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(26);
 
@@ -498757,7 +498743,7 @@ var _rxjs = __webpack_require__(126);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -499707,7 +499693,7 @@ var _rxjs = __webpack_require__(126);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -500274,7 +500260,7 @@ var _recompose = __webpack_require__(21);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -500584,13 +500570,13 @@ var _recompose = __webpack_require__(21);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(19);
 
 __webpack_require__(11);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -501930,7 +501916,7 @@ var _recompose = __webpack_require__(21);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -506359,7 +506345,7 @@ var _recompose = __webpack_require__(21);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -506563,7 +506549,7 @@ var _recompose = __webpack_require__(21);
 
 __webpack_require__(14);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(25);
 
@@ -506904,7 +506890,7 @@ var _AssetDomain = __webpack_require__(188);
 
 var _viewEvents = __webpack_require__(53);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -507468,7 +507454,7 @@ var _isNumber = __webpack_require__(17);
 
 var _isNumber2 = _interopRequireDefault(_isNumber);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -511012,7 +510998,7 @@ var _reduxFusion = __webpack_require__(18);
 
 var _reduxFusion2 = _interopRequireDefault(_reduxFusion);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -512009,7 +511995,7 @@ __webpack_require__(11);
 
 __webpack_require__(183);
 
-__webpack_require__(83);
+__webpack_require__(82);
 
 __webpack_require__(26);
 
@@ -512027,7 +512013,7 @@ var _AssetDomain = __webpack_require__(188);
 
 var _viewEvents = __webpack_require__(53);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -512909,7 +512895,7 @@ __webpack_require__(70);
 
 __webpack_require__(41);
 
-__webpack_require__(82);
+__webpack_require__(81);
 
 __webpack_require__(19);
 
@@ -512921,7 +512907,7 @@ var _AssetDomain = __webpack_require__(188);
 
 var _viewEvents = __webpack_require__(53);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -514163,7 +514149,7 @@ exports.TimerExportService = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -514885,7 +514871,7 @@ var _enums = __webpack_require__(104);
 
 var _reducers = __webpack_require__(78);
 
-var _DeviceServicesCordova = __webpack_require__(80);
+var _DeviceServicesCordova = __webpack_require__(84);
 
 var _ReduxListContainer = __webpack_require__(24);
 

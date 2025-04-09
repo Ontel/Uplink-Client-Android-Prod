@@ -20,12 +20,10 @@ cordova.define("cordova-plugin-file.androidFileSystem", function(require, export
  *
 */
 
-FILESYSTEM_PROTOCOL = "cdvfile";
-
 module.exports = {
-    __format__: function(fullPath, nativeUrl) {
-        var path;
-        var contentUrlMatch = /^content:\/\//.exec(nativeUrl);
+    __format__: function (fullPath, nativeUrl) {
+        let path;
+        const contentUrlMatch = /^content:\/\//.exec(nativeUrl);
         if (contentUrlMatch) {
             // When available, use the path from a native content URL, which was already encoded by Android.
             // This is necessary because JavaScript's encodeURI() does not encode as many characters as
@@ -37,14 +35,14 @@ module.exports = {
             if (!/^\//.test(path)) {
                 path = '/' + path;
             }
-            
-            var m = /\?.*/.exec(nativeUrl);
+
+            const m = /\?.*/.exec(nativeUrl);
             if (m) {
                 path += m[0];
             }
         }
 
-        return FILESYSTEM_PROTOCOL + '://localhost/' + this.name + path;
+        return window.location.origin + '/__cdvfile_' + this.name + '__' + path;
     }
 };
 

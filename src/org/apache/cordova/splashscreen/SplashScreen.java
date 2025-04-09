@@ -122,7 +122,7 @@ public class SplashScreen extends CordovaPlugin {
      * Shorter way to check value of "SplashMaintainAspectRatio" preference.
      */
     private boolean isMaintainAspectRatio () {
-        return preferences.getBoolean("SplashMaintainAspectRatio", false);
+        return preferences.getBoolean("SplashMaintainAspectRatio", true);
     }
 
     private int getFadeDuration () {

@@ -15,9 +15,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.app.NotificationCompat.WearableExtender;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.NotificationCompat.WearableExtender;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -32,10 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 
 @SuppressLint("NewApi")
 public class GCMIntentService extends GcmListenerService implements PushConstants {
@@ -128,7 +125,7 @@ public class GCMIntentService extends GcmListenerService implements PushConstant
             return key.substring(GCM_N.length()+1, key.length());
         } else if (key.startsWith(UA_PREFIX)) {
             key = key.substring(UA_PREFIX.length()+1, key.length());
-            return key.toLowerCase();
+            return key.toLowerCase(Locale.US);
         } else {
             return key;
         }

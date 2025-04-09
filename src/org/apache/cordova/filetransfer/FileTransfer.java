@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,22 +34,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import org.apache.cordova.Config;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaResourceApi;
@@ -56,7 +46,6 @@ import org.apache.cordova.CordovaResourceApi.OpenForReadResult;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginManager;
 import org.apache.cordova.PluginResult;
-import org.apache.cordova.Whitelist;
 import org.apache.cordova.file.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -109,20 +98,20 @@ public class FileTransfer extends CordovaPlugin {
      * the HTTP Content-Length header value from the server.
      */
     private static abstract class TrackingInputStream extends FilterInputStream {
-      public TrackingInputStream(final InputStream in) {
-        super(in);
-      }
+        public TrackingInputStream(final InputStream in) {
+            super(in);
+        }
         public abstract long getTotalRawBytesRead();
-  }
+    }
 
     private static class ExposedGZIPInputStream extends GZIPInputStream {
-      public ExposedGZIPInputStream(final InputStream in) throws IOException {
-        super(in);
-      }
-      public Inflater getInflater() {
-        return inf;
-      }
-  }
+        public ExposedGZIPInputStream(final InputStream in) throws IOException {
+            super(in);
+        }
+        public Inflater getInflater() {
+            return inf;
+        }
+    }
 
     /**
      * Provides raw bytes-read tracking for a GZIP input stream. Reports the
@@ -130,15 +119,15 @@ public class FileTransfer extends CordovaPlugin {
      * number of uncompressed bytes.
      */
     private static class TrackingGZIPInputStream extends TrackingInputStream {
-      private ExposedGZIPInputStream gzin;
-      public TrackingGZIPInputStream(final ExposedGZIPInputStream gzin) throws IOException {
-        super(gzin);
-        this.gzin = gzin;
-      }
-      public long getTotalRawBytesRead() {
-        return gzin.getInflater().getBytesRead();
-      }
-  }
+        private ExposedGZIPInputStream gzin;
+        public TrackingGZIPInputStream(final ExposedGZIPInputStream gzin) throws IOException {
+            super(gzin);
+            this.gzin = gzin;
+        }
+        public long getTotalRawBytesRead() {
+            return gzin.getInflater().getBytesRead();
+        }
+    }
 
     /**
      * Provides simple total-bytes-read tracking for an existing InputStream
@@ -150,10 +139,10 @@ public class FileTransfer extends CordovaPlugin {
         }
 
         private int updateBytesRead(int newBytesRead) {
-          if (newBytesRead != -1) {
-            bytesRead += newBytesRead;
-          }
-          return newBytesRead;
+            if (newBytesRead != -1) {
+                bytesRead += newBytesRead;
+            }
+            return newBytesRead;
         }
 
         @Override
@@ -169,7 +158,7 @@ public class FileTransfer extends CordovaPlugin {
         }
 
         public long getTotalRawBytesRead() {
-          return bytesRead;
+            return bytesRead;
         }
     }
 
@@ -213,11 +202,11 @@ public class FileTransfer extends CordovaPlugin {
                 if (headerValues == null) {
                     headerValues = new JSONArray();
 
-                     /* RFC 2616 also says that any amount of consecutive linear
-                      * whitespace within a header value can be replaced with a
-                      * single space character, without affecting the meaning of
-                      * that value.
-                      */
+                    /* RFC 2616 also says that any amount of consecutive linear
+                     * whitespace within a header value can be replaced with a
+                     * single space character, without affecting the meaning of
+                     * that value.
+                     */
 
                     String headerValue = headers.getString(headerKey);
                     String finalValue = headerValue.replaceAll("\\s+", " ").replaceAll("\\n"," ").replaceAll("[^\\x20-\\x7E]+", " ");
@@ -231,7 +220,7 @@ public class FileTransfer extends CordovaPlugin {
                 }
             }
         } catch (JSONException e1) {
-          // No headers to be manipulated!
+            // No headers to be manipulated!
         }
     }
 
@@ -245,9 +234,9 @@ public class FileTransfer extends CordovaPlugin {
             Method gcMethod  = iccmClass.getMethod("getCookie", String.class);
 
             cookie = (String)gcMethod.invoke(
-                        iccmClass.cast(
+                    iccmClass.cast(
                             gcmMethod.invoke(webView)
-                        ), target);
+                    ), target);
 
             gotCookie = true;
         } catch (NoSuchMethodException e) {
@@ -284,7 +273,6 @@ public class FileTransfer extends CordovaPlugin {
         final String fileName = getArgument(args, 3, "image.jpg");
         final String mimeType = getArgument(args, 4, "image/jpeg");
         final JSONObject params = args.optJSONObject(5) == null ? new JSONObject() : args.optJSONObject(5);
-        final boolean trustEveryone = args.optBoolean(6);
         // Always use chunked mode unless set to false as per API
         final boolean chunkedMode = args.optBoolean(7) || args.isNull(7);
         // Look for headers on the params map for backwards compatibility with older Cordova versions.
@@ -298,7 +286,6 @@ public class FileTransfer extends CordovaPlugin {
         LOG.d(LOG_TAG, "fileName: " + fileName);
         LOG.d(LOG_TAG, "mimeType: " + mimeType);
         LOG.d(LOG_TAG, "params: " + params);
-        LOG.d(LOG_TAG, "trustEveryone: " + trustEveryone);
         LOG.d(LOG_TAG, "chunkedMode: " + chunkedMode);
         LOG.d(LOG_TAG, "headers: " + headers);
         LOG.d(LOG_TAG, "objectId: " + objectId);
@@ -334,8 +321,6 @@ public class FileTransfer extends CordovaPlugin {
                         tmpSrc.getScheme() != null ? tmpSrc : Uri.fromFile(new File(source)));
 
                 HttpURLConnection conn = null;
-                HostnameVerifier oldHostnameVerifier = null;
-                SSLSocketFactory oldSocketFactory = null;
                 int totalBytes = 0;
                 int fixedLength = -1;
                 try {
@@ -346,15 +331,6 @@ public class FileTransfer extends CordovaPlugin {
                     //------------------ CLIENT REQUEST
                     // Open a HTTP connection to the URL based on protocol
                     conn = resourceApi.createHttpConnection(targetUri);
-                    if (useHttps && trustEveryone) {
-                        // Setup the HTTPS connection class to trust everyone
-                        HttpsURLConnection https = (HttpsURLConnection)conn;
-                        oldSocketFactory  = trustAllHosts(https);
-                        // Save the current hostnameVerifier
-                        oldHostnameVerifier = https.getHostnameVerifier();
-                        // Setup the connection not to verify hostnames
-                        https.setHostnameVerifier(DO_NOT_VERIFY);
-                    }
 
                     // Allow Inputs
                     conn.setDoInput(true);
@@ -387,20 +363,20 @@ public class FileTransfer extends CordovaPlugin {
                     }
 
                     /*
-                        * Store the non-file portions of the multipart data as a string, so that we can add it
-                        * to the contentSize, since it is part of the body of the HTTP request.
-                        */
+                     * Store the non-file portions of the multipart data as a string, so that we can add it
+                     * to the contentSize, since it is part of the body of the HTTP request.
+                     */
                     StringBuilder beforeData = new StringBuilder();
                     try {
                         for (Iterator<?> iter = params.keys(); iter.hasNext();) {
                             Object key = iter.next();
                             if(!String.valueOf(key).equals("headers"))
                             {
-                              beforeData.append(LINE_START).append(BOUNDARY).append(LINE_END);
-                              beforeData.append("Content-Disposition: form-data; name=\"").append(key.toString()).append('"');
-                              beforeData.append(LINE_END).append(LINE_END);
-                              beforeData.append(params.getString(key.toString()));
-                              beforeData.append(LINE_END);
+                                beforeData.append(LINE_START).append(BOUNDARY).append(LINE_END);
+                                beforeData.append("Content-Disposition: form-data; name=\"").append(key.toString()).append('"');
+                                beforeData.append(LINE_END).append(LINE_END);
+                                beforeData.append(params.getString(key.toString()));
+                                beforeData.append(LINE_END);
                             }
                         }
                     } catch (JSONException e) {
@@ -566,15 +542,6 @@ public class FileTransfer extends CordovaPlugin {
                     synchronized (activeRequests) {
                         activeRequests.remove(objectId);
                     }
-
-                    if (conn != null) {
-                        // Revert back to the proper verifier and socket factories
-                        if (trustEveryone && useHttps) {
-                            HttpsURLConnection https = (HttpsURLConnection) conn;
-                            https.setHostnameVerifier(oldHostnameVerifier);
-                            https.setSSLSocketFactory(oldSocketFactory);
-                        }
-                    }
                 }
             }
         });
@@ -592,53 +559,9 @@ public class FileTransfer extends CordovaPlugin {
     private static TrackingInputStream getInputStream(URLConnection conn) throws IOException {
         String encoding = conn.getContentEncoding();
         if (encoding != null && encoding.equalsIgnoreCase("gzip")) {
-          return new TrackingGZIPInputStream(new ExposedGZIPInputStream(conn.getInputStream()));
+            return new TrackingGZIPInputStream(new ExposedGZIPInputStream(conn.getInputStream()));
         }
         return new SimpleTrackingInputStream(conn.getInputStream());
-    }
-
-    // always verify the host - don't check for certificate
-    private static final HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
-        public boolean verify(String hostname, SSLSession session) {
-            return true;
-        }
-    };
-    // Create a trust manager that does not validate certificate chains
-    private static final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-            return new java.security.cert.X509Certificate[] {};
-        }
-
-        public void checkClientTrusted(X509Certificate[] chain,
-                String authType) throws CertificateException {
-        }
-
-        public void checkServerTrusted(X509Certificate[] chain,
-                String authType) throws CertificateException {
-        }
-    } };
-
-    /**
-     * This function will install a trust manager that will blindly trust all SSL
-     * certificates.  The reason this code is being added is to enable developers
-     * to do development using self signed SSL certificates on their web server.
-     *
-     * The standard HttpsURLConnection class will throw an exception on self
-     * signed certificates if this code is not run.
-     */
-    private static SSLSocketFactory trustAllHosts(HttpsURLConnection connection) {
-        // Install the all-trusting trust manager
-        SSLSocketFactory oldFactory = connection.getSSLSocketFactory();
-        try {
-            // Install our all trusting manager
-            SSLContext sc = SSLContext.getInstance("TLS");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            SSLSocketFactory newFactory = sc.getSocketFactory();
-            connection.setSSLSocketFactory(newFactory);
-        } catch (Exception e) {
-            LOG.e(LOG_TAG, e.getMessage(), e);
-        }
-        return oldFactory;
     }
 
     private static JSONObject createFileTransferError(int errorCode, String source, String target, URLConnection connection, Throwable throwable) {
@@ -669,7 +592,7 @@ public class FileTransfer extends CordovaPlugin {
                         }
                     }
                 }
-            // IOException can leave connection object in a bad state, so catch all exceptions.
+                // IOException can leave connection object in a bad state, so catch all exceptions.
             } catch (Throwable e) {
                 LOG.w(LOG_TAG, "Error getting HTTP status code from connection.", e);
             }
@@ -678,11 +601,11 @@ public class FileTransfer extends CordovaPlugin {
         return createFileTransferError(errorCode, source, target, body, httpStatus, throwable);
     }
 
-        /**
-        * Create an error object based on the passed in errorCode
-        * @param errorCode      the error
-        * @return JSONObject containing the error
-        */
+    /**
+     * Create an error object based on the passed in errorCode
+     * @param errorCode      the error
+     * @return JSONObject containing the error
+     */
     private static JSONObject createFileTransferError(int errorCode, String source, String target, String body, Integer httpStatus, Throwable throwable) {
         JSONObject error = null;
         try {
@@ -739,7 +662,6 @@ public class FileTransfer extends CordovaPlugin {
 
         final CordovaResourceApi resourceApi = webView.getResourceApi();
 
-        final boolean trustEveryone = args.optBoolean(2);
         final String objectId = args.getString(3);
         final JSONObject headers = args.optJSONObject(4);
 
@@ -754,25 +676,11 @@ public class FileTransfer extends CordovaPlugin {
             return;
         }
 
-        /* This code exists for compatibility between 3.x and 4.x versions of Cordova.
-         * Previously the CordovaWebView class had a method, getWhitelist, which would
-         * return a Whitelist object. Since the fixed whitelist is removed in Cordova 4.x,
-         * the correct call now is to shouldAllowRequest from the plugin manager.
-         */
         Boolean shouldAllowRequest = null;
         if (isLocalTransfer) {
             shouldAllowRequest = true;
         }
-        if (shouldAllowRequest == null) {
-            try {
-                Method gwl = webView.getClass().getMethod("getWhitelist");
-                Whitelist whitelist = (Whitelist)gwl.invoke(webView);
-                shouldAllowRequest = whitelist.isUrlWhiteListed(source);
-            } catch (NoSuchMethodException e) {
-            } catch (IllegalAccessException e) {
-            } catch (InvocationTargetException e) {
-            }
-        }
+
         if (shouldAllowRequest == null) {
             try {
                 Method gpm = webView.getClass().getMethod("getPluginManager");
@@ -786,12 +694,11 @@ public class FileTransfer extends CordovaPlugin {
         }
 
         if (!Boolean.TRUE.equals(shouldAllowRequest)) {
-            LOG.w(LOG_TAG, "Source URL is not in white list: '" + source + "'");
+            LOG.w(LOG_TAG, "The Source URL is not in the Allow List: '" + source + "'");
             JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, null, 401, null);
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, error));
             return;
         }
-
 
         final RequestContext context = new RequestContext(source, target, callbackContext);
         synchronized (activeRequests) {
@@ -809,8 +716,6 @@ public class FileTransfer extends CordovaPlugin {
                 Uri targetUri = resourceApi.remapUri(
                         tmpTarget.getScheme() != null ? tmpTarget : Uri.fromFile(new File(target)));
                 HttpURLConnection connection = null;
-                HostnameVerifier oldHostnameVerifier = null;
-                SSLSocketFactory oldSocketFactory = null;
                 File file = null;
                 PluginResult result = null;
                 TrackingInputStream inputStream = null;
@@ -838,16 +743,6 @@ public class FileTransfer extends CordovaPlugin {
                         // connect to server
                         // Open a HTTP connection to the URL based on protocol
                         connection = resourceApi.createHttpConnection(sourceUri);
-                        if (useHttps && trustEveryone) {
-                            // Setup the HTTPS connection class to trust everyone
-                            HttpsURLConnection https = (HttpsURLConnection)connection;
-                            oldSocketFactory = trustAllHosts(https);
-                            // Save the current hostnameVerifier
-                            oldHostnameVerifier = https.getHostnameVerifier();
-                            // Setup the connection not to verify hostnames
-                            https.setHostnameVerifier(DO_NOT_VERIFY);
-                        }
-
                         connection.setRequestMethod("GET");
 
                         // TODO: Make OkHttp use this CookieManager by default.
@@ -898,7 +793,7 @@ public class FileTransfer extends CordovaPlugin {
                             // write bytes to file
                             byte[] buffer = new byte[MAX_BUFFER_SIZE];
                             int bytesRead = 0;
-                            outputStream = resourceApi.openOutputStream(targetUri);
+                            outputStream = new FileOutputStream(file);
                             while ((bytesRead = inputStream.read(buffer)) > 0) {
                                 outputStream.write(buffer, 0, bytesRead);
                                 // Send a progress event.
@@ -971,15 +866,6 @@ public class FileTransfer extends CordovaPlugin {
                 } finally {
                     synchronized (activeRequests) {
                         activeRequests.remove(objectId);
-                    }
-
-                    if (connection != null) {
-                        // Revert back to the proper verifier and socket factories
-                        if (trustEveryone && useHttps) {
-                            HttpsURLConnection https = (HttpsURLConnection) connection;
-                            https.setHostnameVerifier(oldHostnameVerifier);
-                            https.setSSLSocketFactory(oldSocketFactory);
-                        }
                     }
 
                     if (result == null) {

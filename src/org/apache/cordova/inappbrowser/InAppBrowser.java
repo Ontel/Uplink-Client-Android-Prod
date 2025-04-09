@@ -615,13 +615,13 @@ public class InAppBrowser extends CordovaPlugin {
                 toolbar.setBackgroundColor(android.graphics.Color.LTGRAY);
                 toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, this.dpToPixels(44)));
                 toolbar.setPadding(this.dpToPixels(2), this.dpToPixels(2), this.dpToPixels(2), this.dpToPixels(2));
-                toolbar.setHorizontalGravity(Gravity.LEFT);
+                toolbar.setHorizontalGravity(Gravity.START);
                 toolbar.setVerticalGravity(Gravity.TOP);
 
                 // Action Button Container layout
                 RelativeLayout actionButtonContainer = new RelativeLayout(cordova.getActivity());
                 actionButtonContainer.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-                actionButtonContainer.setHorizontalGravity(Gravity.LEFT);
+                actionButtonContainer.setHorizontalGravity(Gravity.START);
                 actionButtonContainer.setVerticalGravity(Gravity.CENTER_VERTICAL);
                 actionButtonContainer.setId(Integer.valueOf(1));
 
@@ -989,9 +989,10 @@ public class InAppBrowser extends CordovaPlugin {
                             }
                         }
                     }
-                    intent.setData(Uri.parse("sms:" + address));
+                    intent.setDataAndType(Uri.parse("sms:" + address), "vnd.android-dir/mms-sms");
+                    //intent.setData(Uri.parse("sms:" + address));
                     intent.putExtra("address", address);
-                    intent.setType("vnd.android-dir/mms-sms");
+                    //intent.setType("vnd.android-dir/mms-sms");
                     cordova.getActivity().startActivity(intent);
                     return true;
                 } catch (android.content.ActivityNotFoundException e) {

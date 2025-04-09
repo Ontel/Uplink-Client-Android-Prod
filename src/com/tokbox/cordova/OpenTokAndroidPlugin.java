@@ -181,7 +181,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
             Editor edit = prefs.edit();
             edit.clear();
             edit.putBoolean("opentok.publisher.accepted", true);
-            edit.commit();
+            edit.apply();
 
 
             boolean audioFallbackEnabled = true;

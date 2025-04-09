@@ -409,12 +409,110 @@ module.exports = [
     "clobbers": [
       "cordova.plugins.imagesaver"
     ]
+  },
+  {
+    "id": "cordova-plugin-chooser.Chooser",
+    "file": "plugins/cordova-plugin-chooser/www/chooser.js",
+    "pluginId": "cordova-plugin-chooser",
+    "clobbers": [
+      "chooser"
+    ]
+  },
+  {
+    "id": "cordova-plugin-filepath.FilePath",
+    "file": "plugins/cordova-plugin-filepath/www/FilePath.js",
+    "pluginId": "cordova-plugin-filepath",
+    "clobbers": [
+      "window.FilePath"
+    ]
+
+  },
+  {
+    "id": "cordova-plugin-telerik-imagepicker.imagepicker",
+    "file": "plugins/cordova-plugin-telerik-imagepicker/www/imagepicker.js",
+    "pluginId": "cordova-plugin-telerik-imagepicker",
+    "clobbers": [
+      "window.imagePicker"
+    ]
+  },
+  {
+    "id": "cordova-plugin-advanced-http.cookie-handler",
+    "file": "plugins/cordova-plugin-advanced-http/www/cookie-handler.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.dependency-validator",
+    "file": "plugins/cordova-plugin-advanced-http/www/dependency-validator.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.error-codes",
+    "file": "plugins/cordova-plugin-advanced-http/www/error-codes.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.global-configs",
+    "file": "plugins/cordova-plugin-advanced-http/www/global-configs.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.helpers",
+    "file": "plugins/cordova-plugin-advanced-http/www/helpers.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.js-util",
+    "file": "plugins/cordova-plugin-advanced-http/www/js-util.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.local-storage-store",
+    "file": "plugins/cordova-plugin-advanced-http/www/local-storage-store.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.lodash",
+    "file": "plugins/cordova-plugin-advanced-http/www/lodash.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.messages",
+    "file": "plugins/cordova-plugin-advanced-http/www/messages.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.ponyfills",
+    "file": "plugins/cordova-plugin-advanced-http/www/ponyfills.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.public-interface",
+    "file": "plugins/cordova-plugin-advanced-http/www/public-interface.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.tough-cookie",
+    "file": "plugins/cordova-plugin-advanced-http/www/umd-tough-cookie.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.url-util",
+    "file": "plugins/cordova-plugin-advanced-http/www/url-util.js",
+    "pluginId": "cordova-plugin-advanced-http"
+  },
+  {
+    "id": "cordova-plugin-advanced-http.advanced-http",
+    "file": "plugins/cordova-plugin-advanced-http/www/advanced-http.js",
+    "pluginId": "cordova-plugin-advanced-http",
+    "clobbers": [
+      "cordova.plugin.http"
+    ]
   }
 ];
 module.exports.metadata = 
 // TOP OF METADATA
 {
-  "cordova-plugin-camera": "2.4.1",
+  "cordova-plugin-camera": "5.0.2",
   "cordova-plugin-device": "1.1.7",
   "cordova-plugin-file": "4.3.3",
   "cordova-plugin-file-transfer": "1.6.3",
@@ -431,7 +529,11 @@ module.exports.metadata =
   "com.bez4pieci.cookies": "0.0.1",
   "ionic-plugin-keyboard": "2.2.1",
   "phonegap-plugin-push": "1.7.0",
-  "cordova-plugin-save-image": "0.3.0"
+  "cordova-plugin-save-image": "0.3.0",
+  "cordova-plugin-chooser": "1.2.5",
+  "cordova-plugin-filepath": "1.5.6",
+  "cordova-plugin-telerik-imagepicker": "2.3.6",
+  "cordova-plugin-advanced-http": "3.3.1"
 };
 // BOTTOM OF METADATA
 });

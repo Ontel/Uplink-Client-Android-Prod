@@ -18,7 +18,7 @@ public class PermissionUtils {
         String pkg = appContext.getPackageName();
         int uid = appInfo.uid;
         Class appOpsClass = null;
-        Object appOps = appContext.getSystemService("appops");
+        Object appOps = appContext.getSystemService(Context.APP_OPS_SERVICE);
 
         try {
 

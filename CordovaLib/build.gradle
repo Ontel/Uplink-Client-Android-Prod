@@ -27,12 +27,12 @@ buildscript {
         google()
         jcenter()
         maven {
-            url "https://maven.google.com"
+            url "https://repo.grails.org/grails/core/"
         }
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0'
+        classpath 'com.android.tools.build:gradle:4.2.2'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
@@ -72,7 +72,10 @@ android {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/NOTICE'
     }
-    buildToolsVersion '28.0.3'
+    buildToolsVersion '30.0.2'
+    defaultConfig {
+        minSdkVersion 21
+    }
 }
 
 install {
@@ -135,4 +138,8 @@ bintray {
             vcsTag = '6.3.0'
         }
     }
+}
+
+dependencies {
+    implementation "androidx.webkit:webkit:1.7.0"
 }

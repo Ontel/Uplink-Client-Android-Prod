@@ -35,6 +35,7 @@ import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
 import org.json.JSONException;
 import java.util.Arrays;
+import java.util.Locale;
 
 public class StatusBar extends CordovaPlugin {
     private static final String TAG = "StatusBar";
@@ -259,12 +260,12 @@ public class StatusBar extends CordovaPlugin {
                     "blackopaque",
                 };
 
-                if (Arrays.asList(darkContentStyles).contains(style.toLowerCase())) {
+                if (Arrays.asList(darkContentStyles).contains(style.toLowerCase(Locale.US))) {
                     decorView.setSystemUiVisibility(uiOptions | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
                     return;
                 }
 
-                if (Arrays.asList(lightContentStyles).contains(style.toLowerCase())) {
+                if (Arrays.asList(lightContentStyles).contains(style.toLowerCase(Locale.US))) {
                     decorView.setSystemUiVisibility(uiOptions & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
                     return;
                 }

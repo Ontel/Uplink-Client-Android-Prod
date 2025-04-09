@@ -38,10 +38,10 @@ buildscript {
 apply plugin: 'com.android.library'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    implementation fileTree(dir: 'libs', include: '*.jar')
 //    debugCompile project(path: ":CordovaLib", configuration: "debug")
 //    releaseCompile project(path: ":CordovaLib", configuration: "release")
-    compile project(':CordovaLib')
+    implementation project(':CordovaLib')
 }
 
 android {

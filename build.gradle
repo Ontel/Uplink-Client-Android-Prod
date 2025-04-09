@@ -23,9 +23,9 @@ buildscript {
     repositories {
         google()
         maven {
-            url "https://maven.google.com"
+            url "https://repo.grails.org/grails/core/"
         }
-        jcenter()
+        mavenCentral()
     }
 
     // Switch the Android Gradle plugin version requirement depending on the
@@ -33,44 +33,49 @@ buildscript {
     // http://tools.android.com/tech-docs/new-build-system/version-compatibility
     // and https://issues.apache.org/jira/browse/CB-8143
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.0'
+        classpath 'com.android.tools.build:gradle:4.2.2'
     }
 }
 
 // Allow plugins to declare Maven dependencies via build-extras.gradle.
 allprojects {
     repositories {
+
+        maven {
+            url 'https://repo.maven.apache.org/maven2'
+            name 'Maven Central'
+        }
         google()
         maven {
-            url "https://maven.google.com"
+            url "https://repo.grails.org/grails/core/"
         }
-        jcenter()
+        mavenCentral()
     }
 }
 
-task wrapper(type: Wrapper) {
+wrapper {
     gradleVersion = '4.6'
 }
 
-// Configuration properties. Set these via environment variables, build-extras.gradle, or gradle.properties.
+// Configuration propertiindex.jses. Set these via environment variables, build-extras.gradle, or gradle.properties.
 // Refer to: http://www.gradle.org/docs/current/userguide/tutorial_this_and_that.html
 ext {
     apply from: 'CordovaLib/cordova.gradle'
     // The value for android.compileSdkVersion.
     if (!project.hasProperty('cdvCompileSdkVersion')) {
-        cdvCompileSdkVersion = null;
+        cdvCompileSdkVersion = 33
     }
     // The value for android.buildToolsVersion.
     if (!project.hasProperty('cdvBuildToolsVersion')) {
-        cdvBuildToolsVersion = null;
+        cdvBuildToolsVersion = null
     }
     // Sets the versionCode to the given value.
     if (!project.hasProperty('cdvVersionCode')) {
-        cdvVersionCode = null
+        cdvVersionCode = 13584
     }
     // Sets the minSdkVersion to the given value.
     if (!project.hasProperty('cdvMinSdkVersion')) {
-        cdvMinSdkVersion = null
+        cdvMinSdkVersion = 21
     }
     // Whether to build architecture-specific APKs.
     if (!project.hasProperty('cdvBuildMultipleApks')) {
@@ -142,18 +147,20 @@ cdvBuildRelease.dependsOn {
     return computeBuildTargetName(false)
 }
 
-task cdvPrintProps << {
-    println('cdvCompileSdkVersion=' + cdvCompileSdkVersion)
-    println('cdvBuildToolsVersion=' + cdvBuildToolsVersion)
-    println('cdvVersionCode=' + cdvVersionCode)
-    println('cdvMinSdkVersion=' + cdvMinSdkVersion)
-    println('cdvBuildMultipleApks=' + cdvBuildMultipleApks)
-    println('cdvReleaseSigningPropertiesFile=' + cdvReleaseSigningPropertiesFile)
-    println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
-    println('cdvBuildArch=' + cdvBuildArch)
-    println('computedVersionCode=' + android.defaultConfig.versionCode)
-    android.productFlavors.each { flavor ->
-        println('computed' + flavor.name.capitalize() + 'VersionCode=' + flavor.versionCode)
+task cdvPrintProps {
+    doLast {
+        println('cdvCompileSdkVersion=' + cdvCompileSdkVersion)
+        println('cdvBuildToolsVersion=' + cdvBuildToolsVersion)
+        println('cdvVersionCode=' + cdvVersionCode)
+        println('cdvMinSdkVersion=' + cdvMinSdkVersion)
+        println('cdvBuildMultipleApks=' + cdvBuildMultipleApks)
+        println('cdvReleaseSigningPropertiesFile=' + cdvReleaseSigningPropertiesFile)
+        println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
+        println('cdvBuildArch=' + cdvBuildArch)
+        println('computedVersionCode=' + android.defaultConfig.versionCode)
+        android.productFlavors.each { flavor ->
+            println('computed' + flavor.name.capitalize() + 'VersionCode=' + flavor.versionCode)
+        }
     }
 }
 
@@ -171,9 +178,14 @@ android {
         }
     }
 
+    packagingOptions {
+        exclude 'META-INF/proguard/androidx-annotations.pro'
+    }
+
     defaultConfig {
         versionCode cdvVersionCode ?: new BigInteger("" + privateHelpers.extractIntFromManifest("versionCode"))
         applicationId privateHelpers.extractStringFromManifest("package")
+        minSdkVersion 21
 
         if (cdvMinSdkVersion != null) {
             minSdkVersion cdvMinSdkVersion
@@ -191,13 +203,13 @@ android {
             armv7 {
                 versionCode defaultConfig.versionCode*10 + 2
                 ndk {
-                    abiFilters "armeabi-v7a", ""
+                    abiFilters "armeabi-v7a", "arm64-v8a"
                 }
             }
             x86 {
                 versionCode defaultConfig.versionCode*10 + 4
                 ndk {
-                    abiFilters "x86", ""
+                    abiFilters "x86", "x86_64"
                 }
             }
             all {
@@ -224,10 +236,10 @@ android {
     }
     */
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
-    }
+    /*compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }*/
 
     if (cdvReleaseSigningPropertiesFile) {
         signingConfigs {
@@ -249,25 +261,25 @@ android {
     if (cdvDebugSigningPropertiesFile) {
         addSigningProps(cdvDebugSigningPropertiesFile, signingConfigs.debug)
     }
-    buildToolsVersion '28.0.3'
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    implementation fileTree(dir: 'libs', include: '*.jar')
     // SUB-PROJECT DEPENDENCIES START
 //    debugCompile(project(path: "CordovaLib", configuration: "debug"))
 //    releaseCompile(project(path: "CordovaLib", configuration: "release"))
-    compile(project(path: "CordovaLib"))
-    compile "com.android.support:support-v4:24.2.1"
+    implementation(project(path: "CordovaLib"))
+    implementation "androidx.legacy:legacy-support-v4:1.0.0"
 //    compile "com.android.support:support-v4:+"
-    compile "com.android.support:appcompat-v7:24.2.1"
+    implementation "androidx.appcompat:appcompat:1.6.1"
 //    compile "com.android.support:appcompat-v7:23.1.0"
-    compile "com.android.support:design:24.2.1"
+    implementation "com.google.android.material:material:1.6.1"
 //    compile "com.android.support:design:23.0.0"
-    compile "com.android.volley:volley:1.1.0"
-    compile "com.android.support:support-v13:24.2.1"
-    compile "com.google.android.gms:play-services-gcm:+"
-    compile "me.leolin:ShortcutBadger:1.1.4@aar"
+    implementation "com.android.volley:volley:1.2.1"
+    implementation "androidx.legacy:legacy-support-v13:1.0.0"
+    implementation "androidx.webkit:webkit:1.7.0"
+    implementation "com.google.android.gms:play-services-gcm:17.0.0"
+    implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
     // SUB-PROJECT DEPENDENCIES END
 }
 

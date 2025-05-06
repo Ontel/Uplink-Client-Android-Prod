@@ -25,34 +25,32 @@ ext {
 buildscript {
     repositories {
         google()
-        jcenter()
         maven {
             url "https://repo.grails.org/grails/core/"
         }
+        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'org.apache.cordova'
 version = '6.3.0'
 
 android {
-    compileSdkVersion cdvCompileSdkVersion
     publishNonDefault true
 
-    compileOptions {
+    /*compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_6
         targetCompatibility JavaVersion.VERSION_1_6
-    }
+    }*/
 
     sourceSets {
         main {
@@ -72,40 +70,12 @@ android {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/NOTICE'
     }
-    buildToolsVersion '30.0.2'
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
+        compileSdk 34
+        targetSdk 34
     }
-}
-
-install {
-    repositories.mavenInstaller {
-        pom {
-            project {
-                packaging 'aar'
-                name 'Cordova'
-                url 'https://cordova.apache.org'
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id 'stevengill'
-                        name 'Steve Gill'
-                    }
-                }
-                scm {
-                    connection 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git'
-                    developerConnection 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git'
-                    url 'https://git-wip-us.apache.org/repos/asf?p=cordova-android'
-
-                }
-            }
-        }
-    }
+    compileSdk 34
 }
 
 task sourcesJar(type: Jar) {

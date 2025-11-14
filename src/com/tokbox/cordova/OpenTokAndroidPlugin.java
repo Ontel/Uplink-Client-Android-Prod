@@ -49,12 +49,12 @@ import com.tokbox.cordova.OpenTokCustomVideoRenderer;
 
 public class OpenTokAndroidPlugin extends CordovaPlugin
         implements  Session.SessionListener,
-                    Session.ConnectionListener,
-                    Session.ReconnectionListener,
-                    Session.ArchiveListener,
-                    Session.SignalListener,
-                    PublisherKit.PublisherListener,
-                    Session.StreamPropertiesListener {
+        Session.ConnectionListener,
+        Session.ReconnectionListener,
+        Session.ArchiveListener,
+        Session.SignalListener,
+        PublisherKit.PublisherListener,
+        Session.StreamPropertiesListener {
 
     private String sessionId;
     private String apiKey;
@@ -181,7 +181,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
             Editor edit = prefs.edit();
             edit.clear();
             edit.putBoolean("opentok.publisher.accepted", true);
-            edit.apply();
+            edit.commit();
 
 
             boolean audioFallbackEnabled = true;
@@ -295,7 +295,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
         public void onStreamCreated(PublisherKit arg0, Stream arg1) {
             Log.i(TAG, "publisher stream received");
             streamCollection.put(arg1.getStreamId(), arg1);
-            
+
             streamHasAudio.put(arg1.getStreamId(), arg1.hasAudio());
             streamHasVideo.put(arg1.getStreamId(), arg1.hasVideo());
             JSONObject videoDimensions = new JSONObject();
@@ -540,12 +540,11 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
     }
 
     @Override
-    public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         Log.i(TAG, action);
         // TB Methods
         if (action.equals("initPublisher")) {
             myPublisher = new RunnablePublisher(args);
-            callbackContext.success();
         } else if (action.equals("destroyPublisher")) {
             if (myPublisher != null) {
                 myPublisher.destroyPublisher();
@@ -557,8 +556,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
             apiKey = args.getString(0);
             sessionId = args.getString(1);
             Log.i(TAG, "created new session with data: " + args.toString());
-            mSession = new Session.Builder(this.cordova.getActivity().getApplicationContext(), apiKey, sessionId)
-                    .build();
+            mSession = new Session(this.cordova.getActivity().getApplicationContext(), apiKey, sessionId);
             mSession.setSessionListener(this);
             mSession.setConnectionListener(this);
             mSession.setReconnectionListener(this);
@@ -567,7 +565,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
             logOT(null);
 
             // publisher methods
-        } else if (action.equals("cycleVideo")) {
+        } else if (action.equals("setCameraPosition")) {
             myPublisher.mPublisher.cycleCamera();
         } else if (action.equals("publishAudio")) {
             String val = args.getString(0);
@@ -593,6 +591,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
         } else if (action.equals("connect")) {
             Log.i(TAG, "connect command called");
             mSession.connect(args.getString(0));
+            callbackContext.success();
         } else if (action.equals("disconnect")) {
             mSession.disconnect();
         } else if (action.equals("publish")) {
@@ -603,7 +602,6 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
                 } else {
                     myPublisher.startPublishing();
                     Log.i(TAG, "publisher is publishing");
-                    callbackContext.success();
                 }
             }
         } else if (action.equals("signal")) {
@@ -673,20 +671,20 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
             if (args.getString(0).equals("TBPublisher") && myPublisher != null && sessionConnected) {
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
-                      myPublisher.getImgData(callbackContext);
+                        myPublisher.getImgData(callbackContext);
                     }
                 });
                 return true;
             } else {
-                final RunnableSubscriber runsub = subscriberCollection.get(args.getString(0));
+                RunnableSubscriber runsub = subscriberCollection.get(args.getString(0));
                 if (runsub != null) {
-                  cordova.getThreadPool().execute(new Runnable() {
-                      public void run() {
-                         runsub.getImgData(callbackContext);
-                      }
-                  });
-                  runsub.getImgData(callbackContext);
-                  return true;
+                    cordova.getThreadPool().execute(new Runnable() {
+                        public void run() {
+                            runsub.getImgData(callbackContext);
+                        }
+                    });
+                    runsub.getImgData(callbackContext);
+                    return true;
                 }
             }
         } else if (action.equals("exceptionHandler")) {
@@ -709,7 +707,6 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
         } else {
             myPublisher.startPublishing();
             Log.i(TAG, "permission granted-publisher is publishing");
-            permissionsCallback.success();
         }
     }
 
@@ -909,7 +906,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
     @Override
     public void onStreamVideoDimensionsChanged(Session session, Stream stream, int width, int height) {
         JSONObject oldValue = this.streamVideoDimensions.get(stream.getStreamId());
-        
+
         JSONObject newValue = new JSONObject();
         try {
             newValue.put("width", width);
@@ -960,46 +957,46 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
         RequestQueue queue = Volley.newRequestQueue(this.cordova.getActivity().getApplicationContext());
         String url = "https://hlg.tokbox.com/prod/logging/ClientEvent";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
-            new Response.Listener<String>()
-            {
-                @Override
-                public void onResponse(String response) {
-                    // response
-                    Log.i(TAG, "Log Response: " + response);
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.i(TAG, "Log Response: " + response);
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.i(TAG, "Error logging");
+                    }
                 }
-            },
-            new Response.ErrorListener()
-            {
-                 @Override
-                 public void onErrorResponse(VolleyError error) {
-                     // error
-                     Log.i(TAG, "Error logging");
-               }
-            }
         ) {
             @Override
             protected Map<String, String> getParams()
             {
-                    JSONObject payload = new JSONObject();
-                    try {
-                        payload.put("platform", "Android");
-                        payload.put("cp_version", "3.4.0");
-                    } catch (JSONException e) {
-                        Log.i(TAG, "Error creating payload json object");
-                    }
-                    Map<String, String>  params = new HashMap<String, String>();
-                    params.put("payload_type", "info");
-                    params.put("partner_id", apiKey);
-                    params.put("payload", payload.toString());
-                    params.put("source", "https://github.com/opentok/cordova-plugin-opentok");
-                    params.put("build", "2.14.0");
-                    params.put("session_id", sessionId);
-                    if (connectionId != null) {
-                        params.put("action", "cp_on_connect");
-                        params.put("connectionId", connectionId);                
-                    } else {
-                        params.put("action", "cp_initialize");
-                    }
+                JSONObject payload = new JSONObject();
+                try {
+                    payload.put("platform", "Android");
+                    payload.put("cp_version", "3.4.3");
+                } catch (JSONException e) {
+                    Log.i(TAG, "Error creating payload json object");
+                }
+                Map<String, String>  params = new HashMap<String, String>();
+                params.put("payload_type", "info");
+                params.put("partner_id", apiKey);
+                params.put("payload", payload.toString());
+                params.put("source", "https://github.com/opentok/cordova-plugin-opentok");
+                params.put("build", "2.15.3");
+                params.put("session_id", sessionId);
+                if (connectionId != null) {
+                    params.put("action", "cp_on_connect");
+                    params.put("connectionId", connectionId);
+                } else {
+                    params.put("action", "cp_initialize");
+                }
 
                 return params;
             }
@@ -1069,7 +1066,6 @@ public class OpenTokAndroidPlugin extends CordovaPlugin
 
     @Override
     public void onError(PublisherKit arg0, OpentokError arg1) {
-        Log.e(TAG, "onError" + (arg0 == null ? "null" : arg0.getName()) + " " + arg1.getMessage(), arg1.getException());
         // TODO Auto-generated method stub
 
     }

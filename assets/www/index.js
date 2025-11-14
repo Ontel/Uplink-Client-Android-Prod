@@ -14228,8 +14228,8 @@ var ENVIRONMENTS = exports.ENVIRONMENTS = ENVIRONMENTS_ENUM;
 var LOG_LEVEL = exports.LOG_LEVEL = "error";
 var FILESTACK_API_KEY = exports.FILESTACK_API_KEY = "AuQgLT2OxTXCD1c8pfdk9z";
 var FILESTACK_STORE = exports.FILESTACK_STORE = "io-swiftworks-projects-filestack";
-var CLIENT_VERSION = exports.CLIENT_VERSION = "1.2.8";
-var BUILD_DATE = exports.BUILD_DATE = "2025-05-06T18:02:54.517Z";
+var CLIENT_VERSION = exports.CLIENT_VERSION = "1.2.9";
+var BUILD_DATE = exports.BUILD_DATE = "2025-11-13T22:28:17.352Z";
 var ENVIRONMENT = exports.ENVIRONMENT = "production";
 var FBURL = exports.FBURL = "https://swift-projects.firebaseio.com";
 var APP_NAME = exports.APP_NAME = "Swift Projects";
@@ -17516,19 +17516,43 @@ function initializeCordovaSupport($log, $window, $settings, $cordovaCamera, $cor
       });
     } else {
       return $cordovaCapture.captureImage(support.getCameraOptions()).then(function (mediaFiles) {
-        var imageURI = normalizeMediaResult(mediaFiles);
-        if (!imageURI) {
+        var promises = [];
+
+        var normalizedURIs = normalizeUri(mediaFiles, true);
+        if (!normalizedURIs) {
           return Promise.reject('No file captured');
         } else {
-          return support.saveFile(path, name, imageURI).then(_resolveFile).catch(function (error) {
-            $log.debug('captureImage failed. return type ' + (typeof error === 'undefined' ? 'undefined' : _typeof(error)));
-            return error;
-          });
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = normalizedURIs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var imageURI = _step.value;
+
+              promises.push(support.saveFile(path, name, imageURI).then(_resolveFile, function (error) {
+                $log.debug('captureImage failed. return type ' + (typeof error === 'undefined' ? 'undefined' : _typeof(error)));
+                return error;
+              }));
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
         }
+        return Promise.all(promises);
       });
     }
-
-    //$cordovaCamera.cleanup().then(...); // only for FILE_URI
   }
 
   /**
@@ -17542,16 +17566,41 @@ function initializeCordovaSupport($log, $window, $settings, $cordovaCamera, $cor
     if ((0, _isString2.default)(name)) name = sanitize(name);
 
     return $cordovaCapture.captureVideo(support.getVideoOptions()).then(function (mediaFiles) {
-      logMetadata(mediaFiles);
-      var imageURI = normalizeMediaResult(mediaFiles);
-      if (!imageURI) {
+      var promises = [];
+
+      var normalizedURIs = normalizeUri(mediaFiles, true);
+      if (!normalizedURIs) {
         return Promise.reject('No file captured');
       } else {
-        return support.saveFile(path, name, imageURI).then(_resolveFile).catch(function (error) {
-          $log.debug('captureVideo failed. return type ' + (typeof error === 'undefined' ? 'undefined' : _typeof(error)));
-          return error;
-        });
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = normalizedURIs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var imageURI = _step2.value;
+
+            promises.push(support.saveFile(path, name, imageURI).then(_resolveFile, function (error) {
+              $log.debug('captureVideo failed. return type ' + (typeof error === 'undefined' ? 'undefined' : _typeof(error)));
+              return error;
+            }));
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
       }
+      return Promise.all(promises);
     });
   }
 
@@ -17566,40 +17615,6 @@ function initializeCordovaSupport($log, $window, $settings, $cordovaCamera, $cor
     });
   }
 
-  function normalizeMediaResult(data) {
-    if ((0, _isArray2.default)(data)) {
-      if (data[0]) {
-        if (data[0].fullPath.contains('file://')) {
-          return data[0].fullPath;
-        } else {
-          return 'file://' + data[0].fullPath;
-        }
-      }
-    } else {
-      console.log('debugging capture. result:', data);
-    }
-  }
-
-  // handle android content scheme
-  function normalizeContentUri(file) {
-    var fileURI = file.uri;
-
-    if (fileURI.contains('content://')) {
-      var deferred = Promise.defer();
-      window.FilePath.resolveNativePath(fileURI, function (result) {
-        deferred.resolve(result);
-      }, function (error) {
-        $log.debug('normalizeContentUri failed.', error);
-        deferred.reject(error);
-      });
-
-      return deferred.promise;
-    } else {
-      return fileURI;
-    }
-  }
-
-  // works on iOS
   function selectPhotoFromGallery(path, name, allowAllTypes) {
     if ((0, _isString2.default)(path)) path = sanitizePath(path);
     if ((0, _isString2.default)(name)) name = sanitize(name);
@@ -17607,34 +17622,34 @@ function initializeCordovaSupport($log, $window, $settings, $cordovaCamera, $cor
     return $cordovaImagePicker.getPictures(support.getCameraOptions('gallery', allowAllTypes)).then(function (imageURIs) {
       var promises = [];
 
-      var normalizedURIs = normalizeGalleryResult(imageURIs);
+      var normalizedURIs = normalizeUri(imageURIs, false);
       if (!normalizedURIs) {
         return Promise.reject('No files selected');
       } else {
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
 
         try {
-          for (var _iterator = normalizedURIs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var imageURI = _step.value;
+          for (var _iterator3 = normalizedURIs[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var imageURI = _step3.value;
 
             promises.push(support.saveFile(path, name, imageURI).then(_resolveFile, function (error) {
-              $log.debug('capturePhoto selectPhotoFromGallery failed. return type ' + (typeof error === 'undefined' ? 'undefined' : _typeof(error)));
+              $log.debug('selectPhotoFromGallery failed. return type ' + (typeof error === 'undefined' ? 'undefined' : _typeof(error)));
               return error;
             }));
           }
         } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+              _iterator3.return();
             }
           } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
+            if (_didIteratorError3) {
+              throw _iteratorError3;
             }
           }
         }
@@ -17643,60 +17658,15 @@ function initializeCordovaSupport($log, $window, $settings, $cordovaCamera, $cor
     });
   }
 
-  function normalizeGalleryResult(data) {
-    if ((0, _isArray2.default)(data)) {
-      var imageURIs = [];
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = data[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var imageURI = _step2.value;
-
-          if (imageURI.path.contains('file://')) {
-            imageURIs.push(imageURI.path);
-          } else {
-            imageURIs.push('file://' + imageURI.path);
-          }
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
-      }
-
-      return imageURIs;
-    } else {
+  function normalizeUri(data, isFromCapture) {
+    if (!Array.isArray(data)) {
       console.log('debugging capture. result:', data);
+      return;
     }
-  }
 
-  // developing an alternative solution for Android
-  function selectPhotoFromGalleryAndroid(path, name, allowAllTypes) {
-    if ((0, _isString2.default)(path)) path = sanitizePath(path);
-    if ((0, _isString2.default)(name)) name = sanitize(name);
-
-    return $cordovaCamera.getPicture(support.getCameraOptions('gallery', allowAllTypes)).then(function (imageURI) {
-      _initStorageRoot();
-
-      var deferred = Promise.defer();
-
-      $window.resolveLocalFileSystemURL(imageURI, _resolveFileWithUri(imageURI, deferred), function (error) {
-        $log.debug('capturePhoto selectPhotoFromGallery failed. return type ' + (typeof error === 'undefined' ? 'undefined' : _typeof(error)));
-        deferred.reject(error);
-      });
-
-      return deferred.promise;
+    return data.map(function (imageURI) {
+      var path = isFromCapture ? imageURI.fullPath : imageURI.path;
+      return path.includes('file://') ? path : 'file://' + path;
     });
   }
 
@@ -24681,8 +24651,10 @@ var AjaxFactory = exports.AjaxFactory = function () {
         config.serializer = this.cordovaSerializer();
         config.headers['Content-Type'] = this.contentType();
       }if ((this._options.method === 'POST' || this._options.method === 'PATCH') && !this._options.useBody) {
-        config.body = {};
-        config.data = {};
+        config.body = { message: 'ok' };
+        config.data = { message: 'ok' };
+        config.serializer = this.cordovaSerializer();
+        config.headers['Content-Type'] = this.contentType();
       }
 
       return (0, _isFunction2.default)(this._options.modifyRequestConfig) ? this._options.modifyRequestConfig(config, request) : config;
@@ -48951,7 +48923,7 @@ function getErrorCode(error) {
   }
 
   // Inactive blacklist rule
-  if (errorDescription.toLowerCase().contains("account access has been suspended, please contact support@ontel.co")) {
+  if (typeof errorDescription === 'string' && errorDescription.toLowerCase().contains("account access has been suspended, please contact support@ontel.co")) {
     return errorDescription;
   }
 
@@ -58650,6 +58622,7 @@ var AwsS3RequestService = exports.AwsS3RequestService = function () {
       crossDomain: _reduxList.BASE_REDUX_LIST_OPTIONS.crossDomain,
       method: _reduxObservableList.HttpMethod.POST,
       useBody: false,
+      contentType: 'json',
       url: function url(request) {
         return _constants.FILE_GATEWAY_API_URL + '/file-gateway/file-picker/store-success/' + request.fileId;
       },
@@ -263462,7 +263435,7 @@ module.exports = baseHas;
 /* 2178 */
 /***/ (function(module, exports) {
 
-module.exports = {"default.doesnt.match.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] does not match the required pattern [{comparedValue}]","default.invalid.url.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is not a valid URL","default.invalid.creditCard.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is not a valid credit card number","default.invalid.email.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is not a valid e-mail address","default.invalid.range.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] does not fall within the valid range from [{comparedMin}] to [{comparedMax}]","default.invalid.size.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] does not fall within the valid size range from [{comparedMin}] to [{comparedMax}]","default.invalid.max.message":"This cannot exceed {max}","default.invalid.min.message":"This must be at least {min}","default.invalid.max.string.message":"This cannot exceed {max , plural, one{1 character} other{# characters}}","default.invalid.min.string.message":"This must be at least {min , plural, one{1 character} other{# characters}}","default.invalid.max.size.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] exceeds the maximum size of [{comparedValue}]","default.invalid.min.size.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is less than the minimum size of [{comparedValue}]","default.invalid.validator.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] does not pass custom validation","default.not.inlist.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is not contained within the list [{comparedValue}]","default.blank.message":"This cannot be blank","default.select.none.message":"You must select something","default.not.equal.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] cannot equal [{comparedValue}]","default.null.message":"Property [{property}] of type [{className}] cannot be null","default.not.unique.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] must be unique","typeMismatch.URL":"Property {property} must be a valid URL","typeMismatch.URI":"Property {property} must be a valid URI","typeMismatch.Array":"Property {property} must be a valid Array","typeMismatch.Object":"Property {property} must be a valid Object","typeMismatch.Date":"Property {property} must be a valid Date","typeMismatch.email":"Property {property} must be a valid email","typeMismatch.creditCard":"Property {property} must be a valid credit card number","typeMismatch.number":"Property {property} must be a valid number","typeMismatch.string":"Property {property} must be a valid string","typeMismatch.boolean":"Property {property} must be a valid boolean","save.failed.message":"Save Failed!","state.load.failed.message":"Failed to show view!","state.no.task.message":"Failed to load task!","state.no.requirement.message":"Failed to load requirement!","default.error.message":"An error occurred","default.save.validation.message":"Please correct errors and try again.","Project.name.null.message":"You must enter a real project name!","boolean.display.value.true":"Yes","boolean.display.value.false":"No","default.paginate.prev":"Previous","default.paginate.next":"Next","default.boolean.true":"True","default.boolean.false":"False","default.date.format":"yyyy-MM-dd HH:mm:ss z","default.number.format":0,"default.created.message":"{0} {1} created","default.updated.message":"{0} {1} updated","default.deleted.message":"{0} {1} deleted","default.not.deleted.message":"{0} {1} could not be deleted","default.not.found.message":"{0} not found with id {1}","default.optimistic.locking.failure":"Another user has updated this {0} while you were editing","default.home.label":"Home","default.list.label":"List","default.add.label":"Add","default.new.label":"New","default.create.label":"Create","default.show.label":"Show","default.edit.label":"Edit","default.create.button.label":"Create","default.back.label":"Back","default.date.label":"Date","default.time.label":"Time","default.button.create.label":"Create","default.button.edit.label":"Edit","default.button.update.label":"Update","default.button.delete.label":"Delete","default.button.delete.confirm.message":"Are you sure?","default.button.save.label":"Save","default.button.cancel.label":"Cancel","default.button.info.show.label":"Show Details","default.button.info.hide.label":"Hide Details","default.button.tile.label":"Show Tiles","default.button.card.label":"Show Cards","default.button.item.label":"Show Items","default.button.download.label":"Download","default.button.reset.label":"Reset","default.button.load.more.label":"Load More","default.button.collapse.label":"Collapse","default.button.expand.label":"Expand","defaults.context.cancel.label":"Cancel","default.selector.header":"Select","default.input.placeholder":"Input here","default.save.label":"Save","default.saved.label":"Saved!","default.okay.label":"OK","default.submit.label":"Submit","default.continue.label":"Continue","default.cancel.label":"Cancel","default.close.label":"Close","default.clear.label":"Clear","default.yes.label":"Yes","default.no.label":"No","default.na.label":"N/A","default.upload.label":"Upload","default.due.label":"Due","default.reset.label":"Reset","default.delete.label":"Delete","default.delete.confirm.label":"Yes, Delete","default.confirm.label":"Confirm","default.working.label":"Working","default.success.label":"Success!","default.error.label":"Failed","default.options.context.title.label":"Options: {name}","default.actions.context.title.label":"Actions: {name}","default.navigation.context.title.label":"Go to: {name}","default.loading.label":"Loading","default.loading.no.data.label":"No data","default.loading.no.network.label":"No network","default.chat.label":"Chat","default.maps.expand":"Expand Map","default.new.item.label":"New item","default.error.offline.message":"You must be online to do this","default.delete.confirmation.message":"Are you sure you want to delete<br/>{target}","default.description.placeholder":"Description","default.tabs.home.title":"Home","default.tabs.tasks.list.title":"Tasks","default.tabs.overview.title":"Overview","asset.tabs.overview.title":"Asset Overview","view.permission.denied.message":"You do not have permission to access {viewName}","invite.status.error_blacklist.label":"Email blocked. Please verify before attempting again.","invite.status.error_failed_to_deliver.label":"Failed to send. Please verify email","invite.status.pending.label":"Invitation Pending","invite.status.email_sent.label":"Invitation Sent","invite.status.cancelled.label":"Invitation Cancelled","invite.status.rejected.label":"Invitation Rejected","invite.status.accepted.label":"Invitation Accepted","status.label":"Status","status.cancelled.label":"Cancelled","status.has_rejection.label":"Has Rejection","status.rejected.label":"Rejected","status.pending.label":"Pending","status.in_progress.label":"In Progress","status.submitted.label":"Submitted","status.complete.label":"Complete","status.approved.label":"Approved","status.unscheduled.label":"unscheduled","status.scheduled.label":"scheduled","status.imminent.label":"due soon","status.overdue.label":"overdue","schedule.complete.label":"Complete","schedule.cancelled.label":"Cancelled","schedule.past_due.label":"Past due","schedule.imminent.label":"Upcoming","schedule.scheduled.label":"Scheduled","schedule.not_scheduled.label":"Not Scheduled","schedule.submitted.label":"Submitted","schedule.approved.label":"Completed","popup.confirm.input.invalid.message":"Invalid input \"{rejectedValue}\". Enter \"{expectedValue}\"","files.mobile.upload.title.label":"Upload from","files.mobile.camera.label":"Camera","files.mobile.video.label":"Video Camera","files.mobile.select.label":"Files","files.source.local.label":"Local Files","files.source.cloud.label":"Cloud Files","comments.header.label":"Comments","comments.post.label":"Send","comments.author.self.label":"Me","comments.settings.label":"Channel Settings","comments.subscribers.label":"Channel Members","comments.unsubscribe.label":"Unsubscribe","comments.subscribe.label":"Subscribe","comments.unsubscribe.message":"Unsubscribe from channel","comments.subscribe.message":"Subscribe to channel","context.defaults.cancel.label":"Cancel","context.multi.count.label":"{count , plural, one{1 Item} other{# Items}}","priorities.target.status.pinned.label":"Pinned","defaults.filters.all.label":"All","quick.submit.start.label":"Quick Submit","quick.submit.success.label":"Submitted!","quick.approve.start.label":"Quick Approve","quick.approve.success.label":"Approved!","quick.add.to.project.label":"Add to Project","quick.add.to.project.success":"Added!","requirement.reject.active.label":"Rejected","requirement.reject.start.label":"Reject","requirement.reject.success.label":"Rejected!","requirement.reject.revert.label":"Un-Reject","requirement.approve.active.label":"Approved","requirement.approve.start.label":"Approve","requirement.approve.success.label":"Approved!","requirement.approve.revert.label":"Un-Approve","confirm.button.confirm.label":"Confirm?","confirm.button.loading.label":"Saving","confirm.button.working.label":"Saving","confirm.button.success.label":"Success!","confirm.button.failure.label":"Failed","feed.show.label":"Activity Feed","feed.placeholder":"Activity will display here","notifications.header.label":"Notifications","notifications.current.active.count.button":"Working...{count, plural, one{1 Item} other{# Items}}","notifications.current.static.count.button":"{count, plural, one{1 Item} other{# Items}}","help.header.label":"Help","default.select.null.label":"(Nothing)","feed.type.create_instance.label":"Created","feed.type.create_child.label":"Added {type}","feed.type.update_empty_instance.label":"Updated","feed.type.update_instance.label":"Updated","feed.type.delete_child.label":"Deleted {type}","feed.type.cal_status_change.label":"Status Change","feed.type.status_change.label":"Status Change","feed.type.schedule_add.label":"Scheduled","feed.type.schedule_change.label":"Schedule Changed","feed.type.schedule_remove.label":"Unscheduled","feed.type.schedule_override.label":"Schedule Changed","feed.type.submitted_override.label":"Submitted Date Changed","feed.type.assignment_add.label":"Assignment Changed","feed.type.assignment_change.label":"Assignment Changed","feed.type.assignment_remove.label":"Assignment Changed","feed.type.task_assignment.label":"Task Assigned","feed.type.task_reassignment.label":"Task Unassigned","feed.type.file_upload.label":"File Uploaded","feed.type.add_to.label":"Adding","action.ok.label":"OK","action.accept.label":"Accept","action.decline.label":"Decline","tasks.child.customFileReq.label":"custom requirement","tasks.child.customFormReq.label":"custom requirement","tasks.child.templateFileReq.label":"template requirement","tasks.child.templateFormReq.label":"template requirement","tasks.child.fileReq.label":"requirement","tasks.child.formReq.label":"requirement","requirements.child.file.label":"file","organizations.invites.invitee.message":"You have been invited by {inviter} to join {organization}.","organizations.invites.invitee.accepted.message":"You have accepted the invitation to join {organization}.","organizations.invites.invitee.declined.message":"You have declined the invitation to join {organization}.","organizations.invites.invitee.cancelled.message":"The invitation to join {organization} has been cancelled.","organizations.invites.invited.message":"{invitee} has been invited by {inviter} as role {role}.","organizations.invites.accepted.message":"{invitee} has accepted the invitation.","organizations.invites.declined.message":"{invitee} has declined the invitation.","projects.create.message.self":"{name} created by {createdBy}","projects.create.message":"{name} created by {createdBy}","projects.create.child.message.self":"{user} added {type} {child}","projects.create.child.message":"{user} added {type} {child} to {feedTarget}","projects.update.message.self":"{property} updated to {value} by {updatedBy}","projects.update.message":"{feedTarget} {property} updated to {value} by {updatedBy}","projects.update.empty.message.self":"{property} removed by {updatedBy}","projects.update.empty.message":"{feedTarget} {property} removed by {updatedBy}","projects.add.to.message.self":"{asset} added to {project} by {addedBy}","projects.add.to.message":"{asset} added to {project} by {addedBy}","add.to.message.self":"{asset} added to {project} by {addedBy}","add.to.message":"{asset} added to {project} by {addedBy}","projects.delete.child.message.self":"{user} deleted {type} {child}","projects.delete.child.message":"{user} deleted {type} {child} in {feedTarget}","tasks.create.message.self":"{name} created by {createdBy}","tasks.create.message":"{name} created by {createdBy}","tasks.update.message.self":"{property} updated to {value} by {updatedBy}","tasks.update.message":"{feedTarget} {property} updated to {value} by {updatedBy}","tasks.update.empty.message.self":"{property} removed by {updatedBy}","tasks.update.empty.message":"{feedTarget} {property} removed by {updatedBy}","tasks.delete.child.message.self":"{user} deleted {type} {child}","tasks.delete.child.message":"{user} deleted {type} {child} in {feedTarget}","requirements.create.message.self":"{name} created by {createdBy}","requirements.create.message":"{name} created by {createdBy}","requirements.update.message.self":"{property} updated to {value} by {updatedBy}","requirements.update.message":"{feedTarget} {property} updated to {value} by {updatedBy}","requirements.update.empty.message.self":"{property} removed by {updatedBy}","requirements.update.empty.message":"{feedTarget} {property} removed by {updatedBy}","requirements.delete.child.message.self":"{user} deleted {type} {child}","requirements.delete.child.message":"{user} deleted {type} {child} in {feedTarget}","tasks.assignment.add.message.self":"Assigned to {c_assignment} by {changedBy}","tasks.assignment.add.message":"{feedTarget} assigned to {c_assignment} by {changedBy}","tasks.assignment.add.comment.message.self":"Assigned to {c_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.add.comment.message":"{feedTarget} assigned to {c_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.change.message.self":"Reassigned to {c_assignment} from {p_assignment} by {changedBy}","tasks.assignment.change.message":"{feedTarget} reassigned to {c_assignment} from {p_assignment} by {changedBy}","tasks.assignment.change.comment.message.self":"Reassigned to {c_assignment} from {p_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.change.comment.message":"{feedTarget} reassigned to {c_assignment} from {p_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.remove.message.self":"Unassigned from {p_assignment} by {changedBy}","tasks.assignment.remove.message":"{feedTarget} unassigned from {p_assignment} by {changedBy}","tasks.assignment.remove.comment.message.self":"Unassigned from {p_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.remove.comment.message":"{feedTarget} unassigned from {p_assignment} by {changedBy}.\n\"comment: {comment}\"","personnel.task.assignment.message.self":"You've been assigned to task {task} by {changedBy}","personnel.task.assignment.message":"You've been assigned to task {task} by {changedBy}","personnel.task.assignment.comment.message.self":"You've been assigned to task {task} by {changedBy}.\n\"comment: {comment}\"","personnel.task.assignment.comment.message":"You've been assigned to task {task} by {changedBy}.\n\"comment: {comment}\"","teams.task.assignment.message.self":"Assigned to task {task} by {changedBy}","teams.task.assignment.message":"{feedable} has been assigned to task {task} by {changedBy}","teams.task.assignment.comment.message.self":"Assigned to task {task} by {changedBy}.\n\"comment: {comment}\"","teams.task.assignment.comment.message":"{feedable} has been assigned to task {task} by {changedBy}.\n\"comment: {comment}\"","personnel.task.reassignment.message.self":"You've been unassigned from task {task} by {changedBy}","personnel.task.reassignment.message":"You've been unassigned from task {task} by {changedBy}","personnel.task.reassignment.comment.message.self":"You've been unassigned from task {task} by {changedBy}.\n\"comment: {comment}\"","personnel.task.reassignment.comment.message":"You've been unassigned from task {task} by {changedBy}.\n\"comment: {comment}\"","teams.task.reassignment.message.self":"Unassigned from task {task} by {changedBy}","teams.task.reassignment.message":"{feedable} has been unassigned from task {task} by {changedBy}","teams.task.reassignment.comment.message.self":"Unassigned from task {task} by {changedBy}.\n\"comment: {comment}\"","teams.task.reassignment.comment.message":"{feedable} has been unassigned from task {task} by {changedBy}.\n\"comment: {comment}\"","projects.status.change.message.self":"Status changed to {c_status} from {p_status} by {changedBy}","projects.status.change.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}","projects.status.change.comment.message.self":"Status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","projects.status.change.comment.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","tasks.status.change.message.self":"Status changed to {c_status} from {p_status} by {changedBy}","tasks.status.change.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}","tasks.status.change.comment.message.self":"Status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","tasks.status.change.comment.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","tasks.calendar_status.change.message.self":"Task is now {c_status}","tasks.calendar_status.change.message":"{feedTarget} is now {c_status}","requirements.status.change.message.self":"Status changed to {c_status} from {p_status} by {changedBy}","requirements.status.change.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}","requirements.status.change.comment.message.self":"Status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","requirements.status.change.comment.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","requirements.files.file.upload.message.self":"File {fileName} uploaded by {uploadedBy}","requirements.files.file.upload.message":"{feedTarget}: file {fileName} uploaded by {uploadedBy}","fulfillments.files.status.change.message.self":"Status changed to {c_status} from {p_status} by {changedBy}","fulfillments.files.status.change.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}","fulfillments.files.file.upload.message.self":"File uploaded by {uploadedBy}","fulfillments.files.file.upload.message":"{feedTarget}: file uploaded by {uploadedBy}","tasks.schedule.add.message.self":"Task scheduled on {c_schedule} by {changedBy}","tasks.schedule.add.message":"{feedTarget} status scheduled on {c_schedule} by {changedBy}","tasks.schedule.add.comment.message.self":"Task scheduled on {c_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.add.comment.message":"{feedTarget} status scheduled on {c_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.change.message.self":"Task rescheduled to {c_schedule} from {p_schedule} by {changedBy}","tasks.schedule.change.message":"{feedTarget} status rescheduled to {c_schedule} from {p_schedule} by {changedBy}","tasks.schedule.change.comment.message.self":"Task rescheduled to {c_schedule} from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.change.comment.message":"{feedTarget} status rescheduled to {c_schedule} from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.remove.message.self":"Task removed from the schedule from {p_schedule} by {changedBy}","tasks.schedule.remove.message":"{feedTarget} status removed from the schedule from {p_schedule} by {changedBy}","tasks.schedule.remove.comment.message.self":"Task removed from the schedule from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.remove.comment.message":"{feedTarget} status removed from the schedule from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.override.message.self":"Task schedule overridden to {c_schedule} from {p_schedule} by {changedBy}","tasks.schedule.override.message":"{feedTarget} status schedule overridden to {c_schedule} from {p_schedule} by {changedBy}","tasks.schedule.override.comment.message.self":"Task schedule overridden to {c_schedule} from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.override.comment.message":"{feedTarget} status schedule overridden to {c_schedule} from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.submitted.override.message.self":"Task schedule overridden to {c_submitted} from {p_submitted} by {changedBy}","tasks.submitted.override.message":"{feedTarget} status schedule overridden to {c_submitted} from {p_submitted} by {changedBy}","tasks.submitted.override.comment.message.self":"Task schedule overridden to {c_submitted} from {p_submitted} by {changedBy}.\n\"comment: {comment}\"","tasks.submitted.override.comment.message":"{feedTarget} status schedule overridden to {c_submitted} from {p_submitted} by {changedBy}.\n\"comment: {comment}\"","auth.login.title":"Swift Projects","auth.login.username.label":"Username","auth.login.password.label":"Password","auth.login.buttons.login.label":"Log In","auth.login.buttons.login.google.label":"Log in with Google+","auth.login.buttons.signup.label":"Or create an account","auth.login.buttons.forgotpassword.label":"Forgot password?","auth.login.offline.message":"Unable to connect to server.","auth.forgotpassword.header.label":"Request Reset","auth.forgotpassword.email.label":"Email","auth.forgotpassword.submit.label":"Submit","auth.app.name":"Swift Projects","auth.invite.person":"You have been invited by","auth.invite.org":"to join the organization","auth.login.or.create":"Please log in or create an account.","auth.invite.title":"Organization Invite","auth.invite.loading.message":"Loading","auth.invite.login.button":"Go to login","auth.invite.home.button":"Go home","auth.invite.resent.message":"A new invite code has been sent to you.","auth.invite.expired.button":"Request New Code","auth.invite.expired.message":"Invite code has expired. Click below to have a new one sent to your email.","auth.invite.missing.message":"This Invitation no longer exists. Please contact the person that invited you.","auth.invite.no.code.message":"Invite code is invalid.","auth.invite.member.message":"You are already a member of this organization.","auth.invite.error.message":"Unexpected error!","auth.invite.confirm":"Confirm","auth.invite.decline":"Decline","auth.invite.accept":"Accept","auth.invite.accept.long":"Do you accept the invitation to join","auth.invite.referral.response.title":"Referral Response","auth.invite.respond.later":"Want to decide later?","auth.invite.respond.skip":"Skip this","auth.account.create":"Create Account","auth.not.user.message":"Not {user}? Logout","profile.complete.header.label":"Complete Profile","profile.update.header.label":"Update Profile","mainmenu.title.label":"Swift Projects","mainmenu.usersection.label":"User Section","mainmenu.home.label":"Home","mainmenu.conversations.label":"Chat","mainmenu.organizations.header.label":"Organization","mainmenu.organizations.calendar.label":"Calendar","mainmenu.projects.header.label":"Project","mainmenu.projects.recent.label":"Recent Projects","mainmenu.projects.home.label":"Projects","mainmenu.project.livemap.label":"Live Map","mainmenu.inventory.home.label":"Inventory","mainmenu.scheduling.home.label":"Schedule","mainmenu.personnel.home.label":"Personnel","mainmenu.forms.label":"Forms","mainmenu.assets.header.label":"Asset","mainmenu.assets.recent.label":"Recent Assets","mainmenu.assets.home.label":"Assets","mainmenu.settings.label":"Settings","mainmenu.activityfeed.label":"Activity Feed","mainmenu.navigateto.label":"Navigate to...","navigation.organization.label":"Organization","navigation.project.label":"Project","navigation.asset.label":"Asset","navigation.task.label":"Task","navigation.requirement.label":"Requirement","user.views.home.label":"Home","user.views.chat.label":"Chat","user.views.activity.title":"Activity Feed","user.home.header.label":"Home","user.home.priorities.remove.label":"Remove from my list","user.home.badge.task":"task","user.home.badge.project":"project","user.home.badge.milestone":"milestone","user.home.badge.requirement":"req","user.home.badge.asset":"asset","user.home.radar":"On my radar","user.home.pins":"My Pins","user.home.todoMessages":"My Alerts","user.home.todoMessages.placeholder":"You currently have no alerts","user.home.timers":"Active Timers","user.home.radar.placeholder":"Items you pin appear here.","user.home.priorities":"My Priorities","user.home.priorities.placeholder":"Items you're involved with appear here.","user.home.timer.start.label":"Start Timer","user.home.this.month.label":"This Month","user.home.unscheduled.month.label":"Unscheduled","priorities.export.header.label":"Pinned Task Export","priorities.export.subheader.label":"Exporting pinned task data from home screen. Uses the current list filter settings.","user.conversations.header.label":"Chat","user.conversations.placeholder":"Conversations you join appear here.","user.conversations.remove.label":"Remove from my list","organizations.nav.banner.title":"Organizations","organizations.nav.banner.description":"Choose one of the organizations you belong to","organizations.home.header.label":"Organization","organizations.home.contactinfo.header.label":"Contact Information","organizations.home.contactinfo.pointofcontact.label":"POC","organizations.home.members.manage.label":"Members","organizations.home.personnel.manage.label":"Personnel","organizations.home.projects.label":"Projects","organizations.home.assets.label":"Assets","organizations.manage.link.label":"Manage Organizations","organizations.manage.header.label":"Manage","organizations.manage.members.header.label":"Members","organizations.manage.invites.header.label":"Invites","organizations.nav.members.manage.label":"Manage Members","organizations.nav.edit.label":"Edit Organization","organizations.poc.header.label":"Point of Contact","organizations.home.context.title.label":"Organization","organizations.home.context.create.org.label":"Create an Organization","organizations.select.header.label":"Choose Org","organizations.select.label":"Select an Organization","organizations.edit.header.label":"Edit Organization","organizations.create.header.label":"Create Org","organizations.create.avatar.label":"Organization logo","organizations.create.name.label":"Name","organizations.create.description.label":"Description","organizations.create.new.label":"Create new organization","organizations.join.label":"Join another organization","organizations.leave.label":"Leave organization","organizations.user.remove.label":"Remove User","organizations.members.context.title.label":"Options","organizations.members.context.add.invite.label":"Create Invite","organizations.members.context.csv.invite.label":"Import from CSV","invites.import.header.label":"Import from CSV","invites.import.select.label":"Select CSV file","invites.import.csv.label":"Or paste in CSV Data","invites.import.success.message":"Import Completed","invites.import.failure.message":"Import Failed","invites.import.template.label":"Download Template","invites.import.instructions.label":"Help","invites.import.no.data.message":"We did not detect anyone to invite","organizations.calendar.title":"Calendar","organizations.properties.name.label":"Name","organizations.properties.description.label":"Description","organizations.properties.poc.label":"Point of Contact","organizations.roles.owner.label":"Owner","organizations.roles.admin.label":"Admin","organizations.roles.power_user.label":"Power User","organizations.roles.user.label":"User","organizations.roles.read_only_all.label":"Read Only - All","organizations.roles.change.confirmation.title":"Change Role","organizations.roles.change.confirmation":"<div style=\"text-align: center;\">Change {profile} to {role}?</div>","organizations.roles.change.error":"Changing {profile} to role {role} failed","default.roles.change.error":"Changing {profile} to role {role} for {name} failed","default.roles.remove.error":"Removing {profile} from {name} failed","assets.nav.banner.title":"Assets","assets.nav.banner.description":"Choose which asset you'd like to access","assets.projects.nav.banner.description":"Choose a project associated with this asset","assets.projects.nav.banner.project.selected":"Currently selected project","assets.properties.identifier.label":"ID Code","assets.properties.name.label":"Name","assets.properties.address.label":"Address","assets.properties.coordinates.label":"Lat, Long","assets.properties.latitude.label":"Latitude","assets.properties.longitude.label":"Longitude","assets.properties.latitude.placeholder":"(decimal -90 to +90)","assets.properties.longitude.placeholder":"(decimal -180 to +180)","assets.edit.header.label":"Edit Asset","assets.create.header.label":"Create Asset","assets.create.context.title.label":"Asset Options","assets.create.context.import.csv.label":"Import from CSV","assets.create.context.import.excel.label":"Import from Excel","assets.create.identifier.label":"ID Code","assets.create.identifier.placeholder":"An ID such as an alpha-numeric reference to this asset in other systems","assets.create.name.label":"Name","assets.create.address.label":"Address","assets.create.coordinates.label":"Coordinates","assets.create.coordinates.placeholder":"Latitude, Longitude as Decimal","assets.create.new.label":"Create asset","assets.home.context.title.label":"Asset","assets.home.context.create.label":"Create Asset","assets.home.context.delete.label":"Delete Asset","assets.home.context.edit.label":"Edit Asset","assets.home.header.label":"Asset home","assets.photos.header.label":"Photos","assets.photos.capture.header.label":"Capture photos","assets.documents.header.label":"Documents","assets.expenses.header.label":"Expenses","assets.expenses.add.header.label":"Add expense","assets.settings.header.label":"Asset Settings","assets.card.metrics.projects.label":"{count , plural, one{1 project} other{# projects}}","assets.validation.idname.blank.message":"The ID and name cannot both be blank.","assets.validation.coords.match.message":"Lat and Long must both be empty or both have a value.","projects.nav.banner.title":"Projects","projects.nav.banner.description":"Choose which project you'd like to access","projects.assets.nav.banner.description":"Choose an asset within the project you've selected","projects.views.activity.title":"Activity Feed","projects.views.access.title":"Manage Access","projects.views.assets.title":"Assets","projects.views.chat.title":"Project Chat","projects.views.tasks.title":"Tasks","projects.views.template.title":"Project Template","projects.views.timer.title":"Time Log","projects.properties.name.label":"Project name","projects.properties.description.label":"Description","projects.child.milestone_simple.label":"milestone","projects.child.milestone.label":"project milestone","projects.child.templateMilestone.label":"template milestone","projects.child.task_simple.label":"task","projects.child.task.label":"project task","projects.child.templateTask.label":"template task","projects.child.customTask.label":"custom task","projects.child.assetProject.label":"asset","projects.current.label":"Project: {name}","projects.clone.no.project.message":"No project selected to clone.","projects.tabs.tasks.list.title":"Tasks","projects.tabs.tasks.template.title":"Project Template","projects.tabs.assets.list.title":"Assets","projects.home.header.label":"Project","projects.home.contactinfo.header.label":"Project Lead","projects.home.activity.label":"Project Activity","projects.home.manage.link.label":"Manage projects assets","projects.home.context.title.label":"Project","projects.home.context.create.label":"Create Project","projects.home.context.clone.label":"Clone Project","projects.home.context.assets.manage.label":"Manage Assets","projects.home.context.edit.label":"Edit Project","projects.home.context.delete.label":"Delete Project","projects.create.new.label":"Create new project","projects.assets.choose":"Choose project assets","projects.assets.create":"Create new project asset","projects.select.header.label":"Choose Projects","projects.select.label":"Select a Project","projects.select.edit.label":"Edit","projects.select.delete.label":"Delete","projects.filters.status.header.label":"Task Status","projects.create.header.label":"Create project","projects.create.name.label":"Project name","projects.create.description.label":"Project description","projects.create.options.label":"Advanced Options","projects.create.private.label":"Make Private","projects.create.location.orientation.label":"Project is asset based","projects.create.success.message":"New Project Saved!","projects.edit.header.label":"Edit Project","projects.edit.details.label":"Edit project details","projects.edit.milestones.label":"Edit project milestones","projects.edit.tasks.label":"Edit project tasks","projects.assets.context.manage.label":"Manage Assets in Project","projects.assets.manage.header.label":"Manage Assets","projects.assets.manage.asset.selected.label":"Selected Asset","projects.assets.manage.toggle.new.label":"Create New Asset","projects.assets.manage.toggle.existing.label":"Choose Existing Asset","projects.assets.ask_add_to_project.label":"Add asset {assetName} to project {projectName}?","projects.assets.not_in_project.label":"{assetName} is not in {projectName}","projects.selectprojectassets.header.label":"Project assets","projects.livemap.header.label":"Live map","projects.manage.header.label":"Manage Project","projects.import.header.label":"Import Project Data","projects.import.select.label":"Select CSV file","projects.import.csv.label":"Or paste in CSV Data","projects.import.progress.message":"Importing {name} data","projects.import.success.message":"Import Completed","projects.import.failure.message":"Import Failed","projects.import.template.label":"Download Template","projects.import.instructions.label":"Help","projects.import.no.data.message":"We did not detect any tasks to import","projects.export.header.label":"Export Project Data","projects.export.assets.header.label":"Export Project Asset Data","projects.export.failure.message":"Export Failed","projects.export.assets.message":"Download the latest snapshot of all assets in this project","projects.filter.assets.many":"Many assets","projects.filter.assets.single":"Single asset","projects.filter.assets.none":"None","projects.filters.in_project.header.label":"In Current Project","projects.filters.in_project.yes.label":"Yes","projects.filters.in_project.no.label":"No","projects.card.metrics.assets.label":"{count , plural, one{1 asset} other{# assets}}","project.export.no.assets.message":"There are no assets in this project to export","project.child.create.permission.denied.message":"You do not have permission to create a {child} in this project.","project.icon.download.title":"Download all files","project.button.create.task.label":"Add task","project.button.create.milestone.label":"Add milestone","project.button.collapse.milestones.label":"Collapse all milestones","project.button.expand.milestones.label":"Expand all milestones","personnel.select.header.label":"Choose Person or Team","personnel.select.null.label":"No one","personnel.home.header.label":"Personnel","personnel.home.list.header.label":"Individuals TODO:this has changed, see brandon's additions","personnel.home.list.header.individuals.label":"Individuals","personnel.home.list.header.teams.label":"Teams","personnel.home.context.title.label":"Personnel","personnel.home.context.person.add.label":"Add Contact","personnel.home.context.person.invite.label":"Invite to Organization","personnel.home.context.person.invite.title":"Send Invite","personnel.home.context.person.delete.label":"Delete Contact","personnel.home.context.team.add.label":"Add {teamType}","personnel.home.context.team.list.add.label":"Add Other Team Type","personnel.home.context.teams.manage.types.label":"Manage Team Types","personnel.home.context.teams.delete.label":"Delete {teamType}","personnel.home.context.members.manage.label":"Manage Organization Members","personnel.presence.legacy.message":"Haven't seen them...","personnel.presence.online.message":"Online","personnel.presence.away.message":"Away","personnel.presence.last_seen.message":"Last Seen {ago}","profile.create.contact.success.message":"Added {name}!","user.tag.label":"User","personnel.individuals.profile.header.label":"Profile","profile.details.create.header.label":"New Person","profile.details.create.avatar.label":"Profile photo","profile.details.create.name.display.label":"Display name","profile.details.create.name.display.placeholder":"Display name","profile.details.create.name.first.label":"First name","profile.details.create.name.first.placeholder":"First name","profile.details.create.name.last.label":"Last name","profile.details.create.name.last.placeholder":"Last name","profile.details.create.role.label":"Role","profile.details.create.contact":"Contact","profile.details.create.role.placeholder":"Their role in {orgName}","profile.details.create.phone.label":"Phone number","profile.details.create.phone.placeholder":"Phone number","profile.details.create.email.label":"Email address","profile.details.create.email.placeholder":"Email address","teams.types.manage.header.label":"Edit Team Types","teams.types.create.header.label":"Create a Team Type","teams.types.create.name.label":"Name","teams.types.create.name.placeholder":"A name for this kind of team","teams.types.create.name.plural.label":"Name Plural","teams.types.create.name.plural.placeholder":"A name for many of this kind of team","teams.types.create.description.label":"Team Description","teams.types.create.description.placeholder":"A default description for each team of this type","teams.types.create.success.message":"Saved {teamType}!","teams.details.header.label":"Team Details","teams.details.context.title.label":"Options: {teamType}","teams.details.context.delete.label":"Delete","teams.details.members":"Members","teams.details.edit.header.label":"Manage {teamType}","teams.details.edit.name.label":"Name","teams.details.edit.name.placeholder":"Enter a name","teams.details.edit.members.expected.label":"Members chosen","teams.details.edit.members.expected.more.label":"{moreCount , plural, =0{And no others} one{And 1 other} other{And # others}}","team.types.select.header.label":"Select a Team Type","tasks.views.requirements.title":"Requirements","tasks.views.requirements.template.title":"Template Requirements","tasks.views.timer.title":"Time Log","tasks.views.activity.title":"Activity Feed","tasks.views.access.title":"Manage Access","tasks.views.chat.title":"Task Chat","tasks.addreq.label":"Add New Requirement","tasks.item.file.label":"Files","tasks.item.form.label":"Forms","tasks.context.title.label":"Tasks","tasks.context.tasks.create.label":"Create Task","tasks.context.tasks.import.label":"Import Project Data","tasks.context.tasks.export.label":"Export Project Data","tasks.context.assets.export.label":"Export Project Asset Data","tasks.context.project.assets.add.label":"Add Asset to Project","tasks.context.project.assets.remove.label":"Remove Asset from Project","tasks.header.label":"Tasks","tasks.details.addreq.header.label":"Add requirement","tasks.default.assignment.label":"Default Assignment","tasks.edit.header.label":"Edit Task","tasks.create.header.label":"Create task","tasks.create.name.label":"Task name","tasks.create.description.label":"Task description","tasks.create.milestone.label":"Milestone","tasks.create.scope.label":"Task scope","tasks.requirements.status.not_started.label":"Not started","tasks.requirements.status.no_requirements.label":"No requirements","tasks.type.all.label":"All","tasks.type.files.label":"Files","tasks.type.forms.label":"Forms","tasks.info.header.label":"Info","tasks.info.name":"Name:","tasks.info.description":"Description:","tasks.info.milestone":"Milestone:","tasks.misc.label":"Misc","tasks.misc.description":"These Tasks are not associated with a milestone","tasks.template.upload.error.message":"You cannot upload files to a template!","tasks.icon.download.title":"Download all task files","tasks.icon.download.title.short":"Download all files","tasks.details.name.label":"Name:","tasks.details.description.label":"Description:","tasks.details.scheduleddate.label":"Scheduled:","tasks.details.completionpercentage.label":"Complete:","tasks.details.assignedTo.label":"Assignee:","tasks.details.context.title.label":"Task Details","tasks.details.context.cancel.label":"Cancel","tasks.details.context.details.edit.label":"Edit Task Details","tasks.details.context.addreq.file.label":"Add File Requirement","tasks.details.context.addreq.form.label":"Add Form Requirement","tasks.details.context.download.files.label":"Download Task Files","tasks.details.context.export.timer.label":"Download Time Data","tasks.details.context.delete.label":"Delete Task","tasks.details.context.show.info.label":"Show Info","tasks.details.reqs.rejected.label":"Has {count , plural, one{1 Rejected Requirement} other{# Rejected Requirements}}","tasks.details.configuredbytemplate.warning.label":"Configured by template","tasks.details.configuredbytemplate.warning.message":"You may only edit the description. The task name and milestone are determined in the template.","tasks.create.options.entire.project.label":"Add to future assets?","tasks.create.options.entire.project.retroactve.label":"Include all existing assets?","tasks.create.options.existing.label":"Include all existing assets?","tasks.create.options.existing.exclude.complete.label":"Exclude complete assets?","requirements.create.options.entire.project.label":"Add to future assets?","requirements.create.options.existing.label":"Include all existing assets?","requirements.create.options.existing.exclude.complete.tasks.label":"Exclude assets where this task is marked complete?","tasks.create.success.message":"New Task Saved!","milestones.create.success.message":"New Milestone Saved!","milestones.edit.header.label":"Edit Milestone","milestones.create.header.label":"Create Milestone","milestones.create.name.label":"Name","milestones.create.description.label":"Description","tasks.context.milestones.create.label":"Create Milestone","milestones.context.title.label":"Options: {milestoneName}","milestones.context.edit.label":"Edit Milestone","milestones.context.delete.label":"Delete Milestone","tasks.properties.name.label":"Name","tasks.properties.description.label":"Description","tasks.properties.duration.label":"Duration","tasks.properties.milestone.label":"Milestone","tasks.properties.milestone.null.message":"Misc","tasks.properties.assignedTo.null.message":"Unassigned","asset-tasks.properties.name.label":"Name","asset-tasks.properties.description.label":"Description","asset-tasks.properties.duration.label":"Duration","asset-tasks.properties.milestone.label":"Milestone","asset-tasks.properties.milestone.null.message":"Misc","asset-tasks.properties.assignedTo.null.message":"Unassigned","milestones.properties.description.null.message":"No Description","requirements.views.files.title":"Files","requirements.views.form.title":"Form","requirements.views.activity.title":"Activity Feed","requirements.views.chat.title":"Requirement Chat","fulfillments.photos.header.label":"Capture Photo","fulfillments.context.delete.label":"Delete Requirement","requirements.details.show.label":"Show","requirements.details.hide.label":"Hide","requirements.details.name.label":"Name","requirements.details.description.label":"Description","requirements.context.details.edit.label":"Edit Requirement's Details","requirements.create.success.message":"New Requirement Saved!","requirements.details.configuredbytemplate.warning.label":"Configured by template","requirements.details.configuredbytemplate.warning.message":"You may not edit the name. It is determined in the template.","requirements.files.header.label":"Upload Files","requirements.files.details.show.label":"Show","requirements.files.details.hide.label":"Hide","requirements.files.details.name.label":"Name","requirements.files.details.min.label":"Minimum files","requirements.files.details.min.label.short":"Min. files","requirements.files.details.max.label":"Maximum files","requirements.files.details.max.label.short":"Max. files","requirements.files.add.enforced.label":"Enforce file count","requirements.files.details.enforced.label":"File count is enforced","requirements.files.details.description.label":"Description","requirements.files.details.count.label":"File Count","requirements.files.details.approximate.label":"Manual-submit","requirements.files.context.title.label":"Requirement Options","requirements.files.context.retyuploads.label":"Retry Uploads","requirements.files.context.cancel.label":"Cancel","requirements.files.context.pickfile.label":"Select File","requirements.files.context.comments.label":"Comments","requirements.files.context.download.files.label":"Download All Files","requirements.files.item.file.title":"Total files uploaded:","requirements.files.item.has.uploads.title":"Files in the upload queue:","requirements.files.buttons.download.label":"Download all requirement files","requirements.files.buttons.download.label.short":"Download files","requirements.files.buttons.camera.label":"Open camera","requirements.files.buttons.video.label":"Open video camera","requirements.files.buttons.upload.label":"Upload files","requirements.files.buttons.upload.label.ios":"Upload iOS photos","requirements.files.view.browser.placeholder.title":"Upload your files here","requirements.files.view.mobile.placeholder.title":"Take photo or upload files","requirements.files.view.browser.placeholder.label":"Drag-&-drop files right here. Or simply click the «Upload files» button above.","requirements.files.view.mobile.placeholder.label":"Click the «Open camera» button to take a picture and upload it. Or click the «Upload files» button to select a file on your device.","requirements.item.collapse.label":"Show names only","requirements.item.expand.label":"Show normal cards","requirements.forms.form.label":"Form","requirements.forms.form.placeholder":"No Form Selected...","requirements.files.create.header.label":"Create File Requirement","requirements.files.edit.header.label":"Edit File Requirement","requirements.forms.create.header.label":"Create Form Requirement","requirements.forms.edit.header.label":"Edit Form Requirement","requirements.status.change.error.samestatus.message":"You are trying to assign the same status!","requirements.status.change.error.incomplete.message":"You need the minimum file count!","requirements.status.change.error.pending.message":"You can't directly reset the status to pending!","requirements.status.change.error.invalid.message":"You made an impossible selection!","fulfillments.files.selected.context.title":"File Options","fulfillments.files.context.download.file.label":"Download File","fulfillments.files.context.replace.file.label":"Archive and Replace File","fulfillments.files.context.load.archived.label":"Load Archived Files","fulfillments.files.context.delete.file.label":"Delete Archived File","fulfillments.files.context.delete.fulfillment.label":"Delete File","files.uploads.pending.label":"Pending Upload","files.uploads.uploading.label":"Uploading","files.uploads.uploaded.label":"Finishing Upload","requirements.context.title.label":"Options: {requirementName}","requirements.context.download.files.label":"Download All Files","requirements.context.delete.label":"Delete Requirement","requirements.file.add.subheader.label":"Add new file requirement","requirements.photo.edit.header.label":"Update","requirements.file.edit.subheader.label":"Edit file requirement","requirements.document.edit.header.label":"Update","requirements.document.edit.subheader.label":"Edit document requirement","requirements.default.add.entire.project.label":"Add to all assets?","requirements.default.add.entire.project.retroactve.label":"Include all existing assets?","tasks.item.files.label":"Files","tasks.item.requirements.files.label":"File Requirements","tasks.item.requirements.status.rejection.header.label":"Rejection","tasks.item.requirements.status.rejection.reason.label":"Rejection rationale","requirements.status.archive.title.label":"Status History","requirements.status.archive.by.user.label":"by","requirements.fulfillment.archive.by.user.label":"by","requirements.fulfillment.archive.file.count.label":"Files:","requirements.card.current":"Current","requirements.card.reject":"Reject","requirements.card.approve":"Approve","requirement.card.filename":"File Name","file-requirements.properties.name.label":"Name","file-requirements.properties.description.label":"Description","file-requirements.properties.minimumFileCount.label":"Minimum Files","file-requirements.properties.maximumFileCount.label":"Maximum Files","file-requirements.properties.countIsEnforced.label":"File count is enforced","asset-file-requirements.properties.name.label":"Name","asset-file-requirements.properties.description.label":"Description","asset-file-requirements.properties.minimumFileCount.label":"Minimum Files","asset-file-requirements.properties.maximumFileCount.label":"Maximum Files","asset-file-requirements.properties.countIsEnforced.label":"File count is enforced","requirements.files.upload.denied.message":"You do not have permission to upload to {name}","requirements.files.upload.denied.status.message":"Uploading to requirements is disabled when the requirement is Cancelled/Approved. Please change task status or choose another task","tasks.files.upload.denied.status.message":"Uploading to requirements is disabled when the task is Cancelled/Approved. Please change task status or choose another task","requirements.list.forms.header":"Forms","requirements.list.files.header":"Files","schedules.home.header.label":"Schedule","schedules.home.list.header.today.label":"Today","schedules.home.list.header.thisweek.label":"This week","schedules.home.list.header.nextweek.label":"Next week","schedules.add.header.label":"Create event","schedules.event.name.label":"Event Name","schedules.event.description.label":"Event Description","schedules.event.dt.label":"Date and Time","schedules.event.project.label":"Project","schedules.event.asset.label":"Asset","schedules.event.Participants.label":"Participants","app.settings.header.label":"Settings","app.settings.file.uploads.label":"File Cache","app.settings.file.uploads.pending.link.label":"View pending uploads","app.settings.file.uploads.pending.header.label":"Pending Uploads","app.settings.file.uploads.pending.buttons.retry.label":"Retry","app.settings.file.uploads.pending.documents.label":"Documents to upload","app.settings.file.uploads.pending.photos.label":"Photos to upload","app.settings.file.uploads.pending.tests.label":"Tests to upload","app.settings.file.uploads.retry.auto.label":"Retry uploads when app starts","app.settings.file.uploads.cached.link.label":"View uploaded files","app.settings.file.uploads.cache.header.label":"Uploaded Files","app.settings.file.uploads.cache.buttons.clear.label":"Empty","app.settings.language.select.label":"Language","app.settings.metrics.header.label":"Local Analysis (Disable to improve performance)","app.settings.camera.heading.label":"Camera settings","app.settings.camera.cropping.allow.label":"Allow cropping","app.settings.camera.photo.size.label":"Photo size","app.settings.camera.photo.quality.label":"JPG quality","app.settings.camera.orientation.fix.label":"Change orientation mode","app.settings.camera.video.quality.label":"Video quality","app.settings.camera.copy.gallery.label":"Save media to gallery","app.settings.audio.n10ns.heading.label":"Sound Notifications","app.settings.audio.n10ns.enable.label":"Enable Sound Notifications","app.settings.audio.n10ns.volume.label":"Volume","app.settings.auth.header.label":"User data","app.settings.auth.password.header.label":"Password","app.settings.auth.password.old.label":"Old password","app.settings.auth.password.newone.label":"New password","app.settings.auth.password.newtwo.label":"Confirm","app.settings.auth.password.submit.label":"Change password","app.settings.auth.logout.label":"Log Out","app.settings.about":"About","app.settings.version":"Version","app.settings.language.english":"English","app.settings.notifications.header.label":"Notifications","app.settings.notifications.push.label":"Send notifications to my device","app.settings.notifications.email.label":"Send notifications to my email","forms.views.list.header.label":"Forms","forms.views.create.header.label":"Create Form","forms.views.update.header.label":"Update Form","forms.context.new.label":"New","forms.context.reset.label":"Clear Changes","forms.context.export.reqs.label":"Export All Form Requirement Data","forms.context.edit.label":"Edit Form","forms.context.delete.label":"Delete Form","forms.export.header.label":"Export Form Data","forms.export.subheader.label":"Exporting all form data in requirements.","forms.response.default.placeholder":"(none)","forms.default.options.required.label":"Response is required","forms.text_short.options.isnumber.label":"Must be a number","forms.text_short.header.label":"Short Text","forms.text_long.options.minlength.label":"Minimum characters","forms.text_long.options.maxlength.label":"Maximum characters","forms.text_long.input.placeholder":"Input here","forms.text_long.header.label":"Long Text","forms.date.options.includedate.label":"Include date","forms.date.options.includeyear.label":"Include year","forms.date.options.includetime.label":"Include time","forms.date.header.label":"Date/Time","forms.duration.options.isduration.label":"Time is a duration","forms.duration.options.defaultunit.label":"Default Unit","forms.duration.options.units.seconds.label":"Seconds","forms.duration.options.units.minutes.label":"Minutes","forms.duration.options.units.hours.label":"Hours","forms.duration.options.units.days.label":"Days","forms.duration.options.units.weeks.label":"Weeks","forms.duration.options.units.months.label":"Months","forms.duration.options.units.years.label":"Years","forms.duration.header.label":"Time Duration","forms.scale.options.startnumber.label":"Starting value","forms.scale.options.endnumber.label":"Ending value","forms.scale.options.step.label":"Increment by/Step Size","forms.scale.options.range.label":"Select range A to B","forms.list.options.items.label":"List items","forms.list.header.label":"List","forms.list.items":"Items","forms.list.options.selectmany.label":"Select more than one","forms.list.select.one.placeholder":"Select an Option","forms.location.options.captureuserlocation.label":"Automatically select user's location","forms.location.verify":"Verify your location","forms.location.input.placeholder":"Type location","forms.location.description":"This is a location item","forms.location.locate.me":"Locate me","forms.location.header.label":"Location","forms.file.header.label":"File Attachment","forms.file.options.expectedfilecount.label":"Expected file/photo count","forms.file.options.expectedfilecountapproximation.label":"Expecting an exact number of files/photos","forms.reference_link.header.label":"Relational Reference","forms.reference_link.options.domainclasses.label":"Linked types","forms.reference_link.options.selectmany.label":"Select more than one","forms.reference_link.searchable":"Searchable data","forms.reference_link.users.teams":"Users/Teams","forms.range.header.label":"Range","forms.build.type":"Field type","forms.build.add.field":"Add Field","forms.display.title":"Title","forms.display.description":"Description","forms.display.example.text":"Example text","forms.display.required":"Required?","forms.display.edit":"Edit","forms.display.choose.file":"Choose file","forms.options.advanced":"Advanced Options","forms.select.header.label":"Choose a Form","forms.buttons.save.changes.no.label":"No Changes","default.filters.modal.header.label":"Filters","requirements.filter.header.label":"Filter Reqs","requirements.statuses.filters.header.label":"Statuses","requirements.statuses.filters.all.label":"All Statuses","tasks.sorting.header.label":"Sort By","tasks.sorting.types.name.label":"Name","tasks.sorting.types.date.label":"Date","tasks.filters.types.header.label":"Task Type","tasks.filters.types.project.label":"In Template","tasks.filters.types.asset.label":"Custom","tasks.filters.status.header.label":"Task Status","tasks.filters.schedule.header.label":"Schedule Date","tasks.filters.schedule.subheader.label":"Filter by schedule","tasks.filters.date.subheader.label":"Filter by date","tasks.filters.date.before.label":"Before date","tasks.filters.date.after.label":"After date","tasks.filters.user.header.label":"Assigned","tasks.filters.user.byme.label":"By me","tasks.filters.user.tome.label":"To me","tasks.filters.user.toteam.label":"To my teams","tasks.filters.user.unassigned.label":"To no one","tasks.filters.user.other.label":"To anyone","requirements.files.list.header.label":"Files","requirements.files.list.context.title.label":"File Options","requirements.files.list.context.download.all.label":"Download All Files","requirements.files.list.milestone.context.title.label":"Milestone Options","requirements.files.list.milestone.context.download.all.label":"Download All Milestone Files","requirements.files.list.file.context.title.label":"File Options","tasks.schedule.tasktitle.label":"Task Name","tasks.schedule.project.label":"Project","tasks.schedule.asset.label":"Asset","tasks.schedule.header.label":"Task Schedule","tasks.schedule.duedate.label":"Due date","tasks.override.duedate.label":"Edit Due date","tasks.schedule.assignedto.label":"Assigned to","tasks.schedule.reason.label":"Reason for change","tasks.schedule.complete.label":"Mark Complete","tasks.schedule.completedate.label":"Complete/Approved","tasks.schedule.revert.label":"Unmark Complete","tasks.schedule.by.time.label":"by","tasks.override.submitted_date.label":"Edit Submission Date","tasks.status.at.time.label":"at","tasks.schedule.disallowed.title":"Invalid Status","tasks.schedule.disallowed.message":"This task is currently {status}. You may not edit the schedule.","tasks.schedule.same.message":"No change detected","tasks.schedule.submittedOn.required.message":"Submitted date cannot be cleared. You must change the status instead.","data.tags.create.header.label":"Create Data Tag","data.tags.update.header.label":"Edit Data Tag","data.tags.create.name.label":"Name","data.tags.create.description.label":"Description","data.tags.create.success.message":"Saved {tagName}!","data.tags.name.restriction.message":"You may only change the name of a tag within the first hour after creating it.","data.tags.manage.links.label":"Select Data Tags","data.tags.manage.links.short.label":"Select Tags","data.tags.manage.links.title":"Manage the selected Data Tags.","data.tags.data.edit.label":"Edit Data","data.tags.data.edit.title":"Edit the data in the Data Tag forms.","data.tags.manage.header.label":"Selected Data Tags","data.tags.manage.context.title.label":"Data Tags Options","data.tags.manage.context.manage.label":"Manage Data Tags","data.tags.manage.toggle.new.label":"Create a tag","data.tags.manage.toggle.existing.label":"Select tags","data.tags.errors.failed.to.load.message":"Failed to load data tag screen!","data.tags.header.label":"Data Tags","data.tags.tagged.items":"Tagged Items","invites.manage.header.label":"Members","invites.manage.resend.label":"Resend","invites.edit.header.label":"Update Invite","invites.create.header.label":"Send Invite","invites.create.send.label":"Send","invites.create.success.message":"Sending invite to {recipient}","invites.create.invitee.name.label":"Name","invites.create.invitee.name.placeholder":"Address to","invites.create.invitee.email.label":"Email","invites.create.invitee.email.placeholder":"A valid email address","invites.create.invitee.role.label":"Role","timers.header.label":"Task Timer","timers.start.label":"Start timer","timers.pause.label":"Pause","timers.resume.label":"Resume","timers.stop.label":"Stop","timers.menu.header.label":"Timers","timers.menu.active.label":"Active","timers.menu.paused.label":"Paused","timers.export.header.label":"Time Data Export","timers.export.subheader.label":"Exporting time data for {typeName}:","timers.export.parent.label":"In {parentType}:","timers.export.format.header.label":"Select Report Format","timers.export.format.xlsx.label":"Excel","timers.export.format.csv.label":"CSV","timers.feed.placeholder.label":"No time logged.","timers.feed.today.label":"Today","timers.feed.worker.label":"Worker","timers.feed.started.label":"Started","timers.feed.ended.label":"Ended","timers.feed.duration.label":"Duration (hours:minutes)","timers.feed.location.label":"Location","datepicker.today":"Today","datepicker.set":"Set","timepicker.set.time":"Set time","timepicker.now":"Now","entity.placeholder.select":"Select one","entity.placeholder.create":"Create one","entity.placeholder.org.none":"No organizations yet","entity.placeholder.org.none.selected":"No organization selected","entity.placeholder.asset.none":"No assets yet","entity.placeholder.asset.none.selected":"No asset selected","entity.placeholder.project.none":"No projects yet","entity.placeholder.project.none.selected":"No project selected","entity.placeholder.or":"or","onboarding.success.header":"Setup Complete","onboarding.success":"You're all set!","onboarding.new.organization":"You can create your first organization on the next screen.","onboarding.get.started":"Get Started","onboarding.skip":"Skip this","onboarding.invite.list.header":"Invites List","onboarding.join.header":"Join","onboarding.join.displayname":"Display Name","onboarding.join.first":"First Name","onboarding.join.last":"Last Name","onboarding.join.email":"Email","onboarding.join.password":"Password","onboarding.join.password.confirm":"Confirm Password","onboarding.join.password.confirm.match.message":"Passwords must match","onboarding.join.login.label":"Log In","onboarding.join.signup.label":"Sign Up","onboarding.join.sendemail.label":"Send Email","onboarding.join.resetpassword.label":"Don't remember your password?","onboarding.join.resetpassword.message":"Please enter your email address. We will send you an email to reset your password.","onboarding.welcome.header":"Welcome","onboarding.welcome.invited":"You have been invited to join the organization","onboarding.welcome.by":"by","onboarding.welcome.newuser":"New User?","onboarding.welcome.signup":"Create an Account","onboarding.welcome.have.account":"Already have an account?","onboarding.welcome.login":"Log In","onboarding.welcome.to.login":"Go to Login","onboarding.welcome.invitation":"You have been invited to join the organization {organizationName} by {inviterName}.","auth.error.credentials.message":"Wrong email or password.","auth.error.blocked.message":"Login blocked after too many failed login attempts.","auth.error.other.message":"An unexpected occurred.","onboarding.invite.accepted.header":"Invite Accepted","onboarding.invite.accepted.message":"You can view tasks assigned to you and tasks you want to pay attention to on the next screen.","onboarding.invite.expired.header":"Invite code has expired.","onboarding.invite.dne.message":"Invite code is invalid or does not exist.","onboarding.invite.request.prompt.message":"Request New Code","onboarding.invite.request.progress.message":"Requesting","onboarding.invite.request.contact.message":"If you believe this is an error, please contact the person that invited you.","onboarding.invite.request.success.message":"Invite code requested, please check your email.","onboarding.invite.request.error.message":"Failed to request a new invite code. Please contact the person that invited you.","onboarding.error.message":"An unexpected error occurred.","onboarding.go.home":"Go to Explore","navigation.header.title":"Explore","video.chat.invite.header":"Invite to Call","video.chat.invite.message":"Select people to invite to the call.","video.chat.invite.add.label":"Add Person","video.chat.title":"Video Chat","video.chat.call.start.label":"Start call","video.chat.call.end.label":"End call","icon.camera.title":"Take Photo","icon.chat.title":"Chat","icon.edit.title":"Edit","icon.delete.title":"Delete","icon.close.title":"Close","icon.add.title":"Add","icon.addtask.title":"Add task","icon.addreq.title":"Add requirement","icon.filter.title":"Filter list","icon.search.title":"Search","icon.options.title":"Options","icon.sweep.title":"Remove completed items","icon.show.title":"Show","icon.hide.title":"Hide","icon.showall.title":"Show all","icon.hideall.title":"Hide all","icon.pin.title":"Pin","icon.pinning.title":"Pinning...","icon.unpin.title":"Unpin","icon.unpinning.title":"Unpinning...","icon.download.title":"Download","icon.upload.title":"Upload files","icon.replace.title":"Replace file","icon.details.title":"View details","icon.toggleview.title":"Toggle view mode","icon.manageAccess.title":"Manage Access","icon.info.title":"Info","icon.timer_feed.title":"Time Feed","icon.feed.title":"Activity Feed","icon.export.tasks.title":"Export Tasks","roles.manage.context.label":"Manage Roles","roles.manage.header.label":"Manage Roles","access.manage.header.label":"Manage Access","access.manage.project.context.label":"Manage Project Access","access.manage.add.member.label":"Add a member","files.not.found.message":"No files were found to download.","files.request.error.message":"An error occurred","delete.permission.denied.message":"You do not have permission to delete {label}","server.default.error.message":"An unexpected error occurred","search.placeholder":"Search..."};
+module.exports = {"default.doesnt.match.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] does not match the required pattern [{comparedValue}]","default.invalid.url.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is not a valid URL","default.invalid.creditCard.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is not a valid credit card number","default.invalid.email.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is not a valid e-mail address","default.invalid.range.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] does not fall within the valid range from [{comparedMin}] to [{comparedMax}]","default.invalid.size.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] does not fall within the valid size range from [{comparedMin}] to [{comparedMax}]","default.invalid.max.message":"This cannot exceed {max}","default.invalid.min.message":"This must be at least {min}","default.invalid.max.string.message":"This cannot exceed {max , plural, one{1 character} other{# characters}}","default.invalid.min.string.message":"This must be at least {min , plural, one{1 character} other{# characters}}","default.invalid.max.size.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] exceeds the maximum size of [{comparedValue}]","default.invalid.min.size.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is less than the minimum size of [{comparedValue}]","default.invalid.validator.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] does not pass custom validation","default.not.inlist.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] is not contained within the list [{comparedValue}]","default.blank.message":"This cannot be blank","default.select.none.message":"You must select something","default.not.equal.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] cannot equal [{comparedValue}]","default.null.message":"Property [{property}] of type [{className}] cannot be null","default.not.unique.message":"Property [{property}] of type [{className}] with value [{rejectedValue}] must be unique","typeMismatch.URL":"Property {property} must be a valid URL","typeMismatch.URI":"Property {property} must be a valid URI","typeMismatch.Array":"Property {property} must be a valid Array","typeMismatch.Object":"Property {property} must be a valid Object","typeMismatch.Date":"Property {property} must be a valid Date","typeMismatch.email":"Property {property} must be a valid email","typeMismatch.creditCard":"Property {property} must be a valid credit card number","typeMismatch.number":"Property {property} must be a valid number","typeMismatch.string":"Property {property} must be a valid string","typeMismatch.boolean":"Property {property} must be a valid boolean","save.failed.message":"Save Failed!","state.load.failed.message":"Failed to show view!","state.no.task.message":"Failed to load task!","state.no.requirement.message":"Failed to load requirement!","default.error.message":"An error occurred","default.save.validation.message":"Please correct errors and try again.","Project.name.null.message":"You must enter a real project name!","boolean.display.value.true":"Yes","boolean.display.value.false":"No","default.paginate.prev":"Previous","default.paginate.next":"Next","default.boolean.true":"True","default.boolean.false":"False","default.date.format":"yyyy-MM-dd HH:mm:ss z","default.number.format":0,"default.created.message":"{0} {1} created","default.updated.message":"{0} {1} updated","default.deleted.message":"{0} {1} deleted","default.not.deleted.message":"{0} {1} could not be deleted","default.not.found.message":"{0} not found with id {1}","default.optimistic.locking.failure":"Another user has updated this {0} while you were editing","default.home.label":"Home","default.list.label":"List","default.add.label":"Add","default.new.label":"New","default.create.label":"Create","default.show.label":"Show","default.edit.label":"Edit","default.create.button.label":"Create","default.back.label":"Back","default.date.label":"Date","default.time.label":"Time","default.button.create.label":"Create","default.button.edit.label":"Edit","default.button.update.label":"Update","default.button.delete.label":"Delete","default.button.delete.confirm.message":"Are you sure?","default.button.save.label":"Save","default.button.cancel.label":"Cancel","default.button.info.show.label":"Show Details","default.button.info.hide.label":"Hide Details","default.button.tile.label":"Show Tiles","default.button.card.label":"Show Cards","default.button.item.label":"Show Items","default.button.download.label":"Download","default.button.reset.label":"Reset","default.button.load.more.label":"Load More","default.button.collapse.label":"Collapse","default.button.expand.label":"Expand","defaults.context.cancel.label":"Cancel","default.selector.header":"Select","default.input.placeholder":"Input here","default.save.label":"Save","default.saved.label":"Saved!","default.okay.label":"OK","default.submit.label":"Submit","default.continue.label":"Continue","default.cancel.label":"Cancel","default.close.label":"Close","default.clear.label":"Clear","default.yes.label":"Yes","default.no.label":"No","default.na.label":"N/A","default.upload.label":"Upload","default.due.label":"Due","default.reset.label":"Reset","default.delete.label":"Delete","default.delete.confirm.label":"Yes, Delete","default.confirm.label":"Confirm","default.working.label":"Working","default.success.label":"Success!","default.error.label":"Failed","default.options.context.title.label":"Options: {name}","default.actions.context.title.label":"Actions: {name}","default.navigation.context.title.label":"Go to: {name}","default.loading.label":"Loading","default.loading.no.data.label":"No data","default.loading.no.network.label":"No network","default.chat.label":"Chat","default.maps.expand":"Expand Map","default.new.item.label":"New item","default.error.offline.message":"You must be online to do this","default.delete.confirmation.message":"Are you sure you want to delete<br/>{target}","default.description.placeholder":"Description","default.tabs.home.title":"Home","default.tabs.tasks.list.title":"Tasks","default.tabs.overview.title":"Overview","asset.tabs.overview.title":"Asset Overview","view.permission.denied.message":"You do not have permission to access {viewName}","invite.status.error_blacklist.label":"Email blocked. Please verify before attempting again.","invite.status.error_failed_to_deliver.label":"Failed to send. Please verify email","invite.status.pending.label":"Invitation Pending","invite.status.email_sent.label":"Invitation Sent","invite.status.cancelled.label":"Invitation Cancelled","invite.status.rejected.label":"Invitation Rejected","invite.status.accepted.label":"Invitation Accepted","status.label":"Status","status.cancelled.label":"Cancelled","status.has_rejection.label":"Has Rejection","status.rejected.label":"Rejected","status.pending.label":"Pending","status.in_progress.label":"In Progress","status.submitted.label":"Submitted","status.complete.label":"Complete","status.approved.label":"Approved","status.unscheduled.label":"unscheduled","status.scheduled.label":"scheduled","status.imminent.label":"due soon","status.overdue.label":"overdue","schedule.complete.label":"Complete","schedule.cancelled.label":"Cancelled","schedule.past_due.label":"Past due","schedule.imminent.label":"Upcoming","schedule.scheduled.label":"Scheduled","schedule.not_scheduled.label":"Not Scheduled","schedule.submitted.label":"Submitted","schedule.approved.label":"Completed","popup.confirm.input.invalid.message":"Invalid input \"{rejectedValue}\". Enter \"{expectedValue}\"","files.mobile.upload.title.label":"Upload from","files.mobile.camera.label":"Camera","files.mobile.video.label":"Video Camera","files.mobile.select.label":"Files","files.source.local.label":"Local Files","files.source.cloud.label":"Cloud Files","comments.header.label":"Comments","comments.post.label":"Send","comments.author.self.label":"Me","comments.settings.label":"Channel Settings","comments.subscribers.label":"Channel Members","comments.unsubscribe.label":"Unsubscribe","comments.subscribe.label":"Subscribe","comments.unsubscribe.message":"Unsubscribe from channel","comments.subscribe.message":"Subscribe to channel","context.defaults.cancel.label":"Cancel","context.multi.count.label":"{count , plural, one{1 Item} other{# Items}}","priorities.target.status.pinned.label":"Pinned","defaults.filters.all.label":"All","quick.submit.start.label":"Quick Submit","quick.submit.success.label":"Submitted!","quick.approve.start.label":"Quick Approve","quick.approve.success.label":"Approved!","quick.add.to.project.label":"Add to Project","quick.add.to.project.success":"Added!","requirement.reject.active.label":"Rejected","requirement.reject.start.label":"Reject","requirement.reject.success.label":"Rejected!","requirement.reject.revert.label":"Un-Reject","requirement.approve.active.label":"Approved","requirement.approve.start.label":"Approve","requirement.approve.success.label":"Approved!","requirement.approve.revert.label":"Un-Approve","confirm.button.confirm.label":"Confirm?","confirm.button.loading.label":"Saving","confirm.button.working.label":"Saving","confirm.button.success.label":"Success!","confirm.button.failure.label":"Failed","feed.show.label":"Activity Feed","feed.placeholder":"Activity will display here","notifications.header.label":"Notifications","notifications.current.active.count.button":"Working...{count, plural, one{1 Item} other{# Items}}","notifications.current.static.count.button":"{count, plural, one{1 Item} other{# Items}}","help.header.label":"Help","default.select.null.label":"(Nothing)","feed.type.create_instance.label":"Created","feed.type.create_child.label":"Added {type}","feed.type.update_empty_instance.label":"Updated","feed.type.update_instance.label":"Updated","feed.type.delete_child.label":"Deleted {type}","feed.type.cal_status_change.label":"Status Change","feed.type.status_change.label":"Status Change","feed.type.schedule_add.label":"Scheduled","feed.type.schedule_change.label":"Schedule Changed","feed.type.schedule_remove.label":"Unscheduled","feed.type.schedule_override.label":"Schedule Changed","feed.type.submitted_override.label":"Submitted Date Changed","feed.type.assignment_add.label":"Assignment Changed","feed.type.assignment_change.label":"Assignment Changed","feed.type.assignment_remove.label":"Assignment Changed","feed.type.task_assignment.label":"Task Assigned","feed.type.task_reassignment.label":"Task Unassigned","feed.type.file_upload.label":"File Uploaded","feed.type.add_to.label":"Adding","action.ok.label":"OK","action.accept.label":"Accept","action.decline.label":"Decline","tasks.child.customFileReq.label":"custom requirement","tasks.child.customFormReq.label":"custom requirement","tasks.child.templateFileReq.label":"template requirement","tasks.child.templateFormReq.label":"template requirement","tasks.child.fileReq.label":"requirement","tasks.child.formReq.label":"requirement","requirements.child.file.label":"file","organizations.invites.invitee.message":"You have been invited by {inviter} to join {organization}.","organizations.invites.invitee.accepted.message":"You have accepted the invitation to join {organization}.","organizations.invites.invitee.declined.message":"You have declined the invitation to join {organization}.","organizations.invites.invitee.cancelled.message":"The invitation to join {organization} has been cancelled.","organizations.invites.invited.message":"{invitee} has been invited by {inviter} as role {role}.","organizations.invites.accepted.message":"{invitee} has accepted the invitation.","organizations.invites.declined.message":"{invitee} has declined the invitation.","projects.create.message.self":"{name} created by {createdBy}","projects.create.message":"{name} created by {createdBy}","projects.create.child.message.self":"{user} added {type} {child}","projects.create.child.message":"{user} added {type} {child} to {feedTarget}","projects.update.message.self":"{property} updated to {value} by {updatedBy}","projects.update.message":"{feedTarget} {property} updated to {value} by {updatedBy}","projects.update.empty.message.self":"{property} removed by {updatedBy}","projects.update.empty.message":"{feedTarget} {property} removed by {updatedBy}","projects.add.to.message.self":"{asset} added to {project} by {addedBy}","projects.add.to.message":"{asset} added to {project} by {addedBy}","add.to.message.self":"{asset} added to {project} by {addedBy}","add.to.message":"{asset} added to {project} by {addedBy}","projects.delete.child.message.self":"{user} deleted {type} {child}","projects.delete.child.message":"{user} deleted {type} {child} in {feedTarget}","tasks.create.message.self":"{name} created by {createdBy}","tasks.create.message":"{name} created by {createdBy}","tasks.update.message.self":"{property} updated to {value} by {updatedBy}","tasks.update.message":"{feedTarget} {property} updated to {value} by {updatedBy}","tasks.update.empty.message.self":"{property} removed by {updatedBy}","tasks.update.empty.message":"{feedTarget} {property} removed by {updatedBy}","tasks.delete.child.message.self":"{user} deleted {type} {child}","tasks.delete.child.message":"{user} deleted {type} {child} in {feedTarget}","requirements.create.message.self":"{name} created by {createdBy}","requirements.create.message":"{name} created by {createdBy}","requirements.update.message.self":"{property} updated to {value} by {updatedBy}","requirements.update.message":"{feedTarget} {property} updated to {value} by {updatedBy}","requirements.update.empty.message.self":"{property} removed by {updatedBy}","requirements.update.empty.message":"{feedTarget} {property} removed by {updatedBy}","requirements.delete.child.message.self":"{user} deleted {type} {child}","requirements.delete.child.message":"{user} deleted {type} {child} in {feedTarget}","tasks.assignment.add.message.self":"Assigned to {c_assignment} by {changedBy}","tasks.assignment.add.message":"{feedTarget} assigned to {c_assignment} by {changedBy}","tasks.assignment.add.comment.message.self":"Assigned to {c_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.add.comment.message":"{feedTarget} assigned to {c_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.change.message.self":"Reassigned to {c_assignment} from {p_assignment} by {changedBy}","tasks.assignment.change.message":"{feedTarget} reassigned to {c_assignment} from {p_assignment} by {changedBy}","tasks.assignment.change.comment.message.self":"Reassigned to {c_assignment} from {p_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.change.comment.message":"{feedTarget} reassigned to {c_assignment} from {p_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.remove.message.self":"Unassigned from {p_assignment} by {changedBy}","tasks.assignment.remove.message":"{feedTarget} unassigned from {p_assignment} by {changedBy}","tasks.assignment.remove.comment.message.self":"Unassigned from {p_assignment} by {changedBy}.\n\"comment: {comment}\"","tasks.assignment.remove.comment.message":"{feedTarget} unassigned from {p_assignment} by {changedBy}.\n\"comment: {comment}\"","personnel.task.assignment.message.self":"You've been assigned to task {task} by {changedBy}","personnel.task.assignment.message":"You've been assigned to task {task} by {changedBy}","personnel.task.assignment.comment.message.self":"You've been assigned to task {task} by {changedBy}.\n\"comment: {comment}\"","personnel.task.assignment.comment.message":"You've been assigned to task {task} by {changedBy}.\n\"comment: {comment}\"","teams.task.assignment.message.self":"Assigned to task {task} by {changedBy}","teams.task.assignment.message":"{feedable} has been assigned to task {task} by {changedBy}","teams.task.assignment.comment.message.self":"Assigned to task {task} by {changedBy}.\n\"comment: {comment}\"","teams.task.assignment.comment.message":"{feedable} has been assigned to task {task} by {changedBy}.\n\"comment: {comment}\"","personnel.task.reassignment.message.self":"You've been unassigned from task {task} by {changedBy}","personnel.task.reassignment.message":"You've been unassigned from task {task} by {changedBy}","personnel.task.reassignment.comment.message.self":"You've been unassigned from task {task} by {changedBy}.\n\"comment: {comment}\"","personnel.task.reassignment.comment.message":"You've been unassigned from task {task} by {changedBy}.\n\"comment: {comment}\"","teams.task.reassignment.message.self":"Unassigned from task {task} by {changedBy}","teams.task.reassignment.message":"{feedable} has been unassigned from task {task} by {changedBy}","teams.task.reassignment.comment.message.self":"Unassigned from task {task} by {changedBy}.\n\"comment: {comment}\"","teams.task.reassignment.comment.message":"{feedable} has been unassigned from task {task} by {changedBy}.\n\"comment: {comment}\"","projects.status.change.message.self":"Status changed to {c_status} from {p_status} by {changedBy}","projects.status.change.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}","projects.status.change.comment.message.self":"Status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","projects.status.change.comment.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","tasks.status.change.message.self":"Status changed to {c_status} from {p_status} by {changedBy}","tasks.status.change.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}","tasks.status.change.comment.message.self":"Status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","tasks.status.change.comment.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","tasks.calendar_status.change.message.self":"Task is now {c_status}","tasks.calendar_status.change.message":"{feedTarget} is now {c_status}","requirements.status.change.message.self":"Status changed to {c_status} from {p_status} by {changedBy}","requirements.status.change.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}","requirements.status.change.comment.message.self":"Status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","requirements.status.change.comment.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}.\n\"comment: {comment}\"","requirements.files.file.upload.message.self":"File {fileName} uploaded by {uploadedBy}","requirements.files.file.upload.message":"{feedTarget}: file {fileName} uploaded by {uploadedBy}","fulfillments.files.status.change.message.self":"Status changed to {c_status} from {p_status} by {changedBy}","fulfillments.files.status.change.message":"{feedTarget} status changed to {c_status} from {p_status} by {changedBy}","fulfillments.files.file.upload.message.self":"File uploaded by {uploadedBy}","fulfillments.files.file.upload.message":"{feedTarget}: file uploaded by {uploadedBy}","tasks.schedule.add.message.self":"Task scheduled on {c_schedule} by {changedBy}","tasks.schedule.add.message":"{feedTarget} status scheduled on {c_schedule} by {changedBy}","tasks.schedule.add.comment.message.self":"Task scheduled on {c_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.add.comment.message":"{feedTarget} status scheduled on {c_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.change.message.self":"Task rescheduled to {c_schedule} from {p_schedule} by {changedBy}","tasks.schedule.change.message":"{feedTarget} status rescheduled to {c_schedule} from {p_schedule} by {changedBy}","tasks.schedule.change.comment.message.self":"Task rescheduled to {c_schedule} from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.change.comment.message":"{feedTarget} status rescheduled to {c_schedule} from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.remove.message.self":"Task removed from the schedule from {p_schedule} by {changedBy}","tasks.schedule.remove.message":"{feedTarget} status removed from the schedule from {p_schedule} by {changedBy}","tasks.schedule.remove.comment.message.self":"Task removed from the schedule from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.remove.comment.message":"{feedTarget} status removed from the schedule from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.override.message.self":"Task schedule overridden to {c_schedule} from {p_schedule} by {changedBy}","tasks.schedule.override.message":"{feedTarget} status schedule overridden to {c_schedule} from {p_schedule} by {changedBy}","tasks.schedule.override.comment.message.self":"Task schedule overridden to {c_schedule} from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.schedule.override.comment.message":"{feedTarget} status schedule overridden to {c_schedule} from {p_schedule} by {changedBy}.\n\"comment: {comment}\"","tasks.submitted.override.message.self":"Task schedule overridden to {c_submitted} from {p_submitted} by {changedBy}","tasks.submitted.override.message":"{feedTarget} status schedule overridden to {c_submitted} from {p_submitted} by {changedBy}","tasks.submitted.override.comment.message.self":"Task schedule overridden to {c_submitted} from {p_submitted} by {changedBy}.\n\"comment: {comment}\"","tasks.submitted.override.comment.message":"{feedTarget} status schedule overridden to {c_submitted} from {p_submitted} by {changedBy}.\n\"comment: {comment}\"","auth.login.title":"Swift Projects","auth.login.username.label":"Username","auth.login.password.label":"Password","auth.login.buttons.login.label":"Log In","auth.login.buttons.login.google.label":"Log in with Google+","auth.login.buttons.signup.label":"Or create an account","auth.login.buttons.forgotpassword.label":"Forgot password?","auth.login.offline.message":"Unable to connect to server.","auth.forgotpassword.header.label":"Request Reset","auth.forgotpassword.email.label":"Email","auth.forgotpassword.submit.label":"Submit","auth.app.name":"Swift Projects","auth.invite.person":"You have been invited by","auth.invite.org":"to join the organization","auth.login.or.create":"Please log in or create an account.","auth.invite.title":"Organization Invite","auth.invite.loading.message":"Loading","auth.invite.login.button":"Go to login","auth.invite.home.button":"Go home","auth.invite.resent.message":"A new invite code has been sent to you.","auth.invite.expired.button":"Request New Code","auth.invite.expired.message":"Invite code has expired. Click below to have a new one sent to your email.","auth.invite.missing.message":"This Invitation no longer exists. Please contact the person that invited you.","auth.invite.no.code.message":"Invite code is invalid.","auth.invite.member.message":"You are already a member of this organization.","auth.invite.error.message":"Unexpected error!","auth.invite.confirm":"Confirm","auth.invite.decline":"Decline","auth.invite.accept":"Accept","auth.invite.accept.long":"Do you accept the invitation to join","auth.invite.referral.response.title":"Referral Response","auth.invite.respond.later":"Want to decide later?","auth.invite.respond.skip":"Skip this","auth.account.create":"Create Account","auth.not.user.message":"Not {user}? Logout","profile.complete.header.label":"Complete Profile","profile.update.header.label":"Update Profile","mainmenu.title.label":"Swift Projects","mainmenu.usersection.label":"User Section","mainmenu.home.label":"Home","mainmenu.conversations.label":"Chat","mainmenu.organizations.header.label":"Organization","mainmenu.organizations.calendar.label":"Calendar","mainmenu.projects.header.label":"Project","mainmenu.projects.recent.label":"Recent Projects","mainmenu.projects.home.label":"Projects","mainmenu.project.livemap.label":"Live Map","mainmenu.inventory.home.label":"Inventory","mainmenu.scheduling.home.label":"Schedule","mainmenu.personnel.home.label":"Personnel","mainmenu.forms.label":"Forms","mainmenu.assets.header.label":"Asset","mainmenu.assets.recent.label":"Recent Assets","mainmenu.assets.home.label":"Assets","mainmenu.settings.label":"Settings","mainmenu.activityfeed.label":"Activity Feed","mainmenu.navigateto.label":"Navigate to...","navigation.organization.label":"Organization","navigation.project.label":"Project","navigation.asset.label":"Asset","navigation.task.label":"Task","navigation.requirement.label":"Requirement","user.views.home.label":"Home","user.views.chat.label":"Chat","user.views.activity.title":"Activity Feed","user.home.header.label":"Home","user.home.priorities.remove.label":"Remove from my list","user.home.badge.task":"task","user.home.badge.project":"project","user.home.badge.milestone":"milestone","user.home.badge.requirement":"req","user.home.badge.asset":"asset","user.home.radar":"On my radar","user.home.pins":"My Pins","user.home.todoMessages":"My Alerts","user.home.todoMessages.placeholder":"You currently have no alerts","user.home.timers":"Active Timers","user.home.radar.placeholder":"Items you pin appear here.","user.home.priorities":"My Priorities","user.home.priorities.placeholder":"Items you're involved with appear here.","user.home.timer.start.label":"Start Timer","user.home.this.month.label":"This Month","user.home.unscheduled.month.label":"Unscheduled","priorities.export.header.label":"Pinned Task Export","priorities.export.subheader.label":"Exporting pinned task data from home screen. Uses the current list filter settings.","user.conversations.header.label":"Chat","user.conversations.placeholder":"Conversations you join appear here.","user.conversations.remove.label":"Remove from my list","organizations.nav.banner.title":"Organizations","organizations.nav.banner.description":"Choose one of the organizations you belong to","organizations.home.header.label":"Organization","organizations.home.contactinfo.header.label":"Contact Information","organizations.home.contactinfo.pointofcontact.label":"POC","organizations.home.members.manage.label":"Members","organizations.home.personnel.manage.label":"Personnel","organizations.home.projects.label":"Projects","organizations.home.assets.label":"Assets","organizations.manage.link.label":"Manage Organizations","organizations.manage.header.label":"Manage","organizations.manage.members.header.label":"Members","organizations.manage.invites.header.label":"Invites","organizations.nav.members.manage.label":"Manage Members","organizations.nav.edit.label":"Edit Organization","organizations.poc.header.label":"Point of Contact","organizations.home.context.title.label":"Organization","organizations.home.context.create.org.label":"Create an Organization","organizations.select.header.label":"Choose Org","organizations.select.label":"Select an Organization","organizations.edit.header.label":"Edit Organization","organizations.create.header.label":"Create Org","organizations.create.avatar.label":"Organization logo","organizations.create.name.label":"Name","organizations.create.description.label":"Description","organizations.create.new.label":"Create new organization","organizations.join.label":"Join another organization","organizations.leave.label":"Leave organization","organizations.user.remove.label":"Remove User","organizations.members.context.title.label":"Options","organizations.members.context.add.invite.label":"Create Invite","organizations.members.context.csv.invite.label":"Import from CSV","invites.import.header.label":"Import from CSV","invites.import.select.label":"Select CSV file","invites.import.csv.label":"Or paste in CSV Data","invites.import.success.message":"Import Completed","invites.import.failure.message":"Import Failed","invites.import.template.label":"Download Template","invites.import.instructions.label":"Help","invites.import.no.data.message":"We did not detect anyone to invite","organizations.calendar.title":"Calendar","organizations.properties.name.label":"Name","organizations.properties.description.label":"Description","organizations.properties.poc.label":"Point of Contact","organizations.roles.owner.label":"Owner","organizations.roles.admin.label":"Admin","organizations.roles.power_user.label":"Power User","organizations.roles.user.label":"User","organizations.roles.read_only_all.label":"Read Only - All","organizations.roles.change.confirmation.title":"Change Role","organizations.roles.change.confirmation":"<div style=\"text-align: center;\">Change {profile} to {role}?</div>","organizations.roles.change.error":"Changing {profile} to role {role} failed","default.roles.change.error":"Changing {profile} to role {role} for {name} failed","default.roles.remove.error":"Removing {profile} from {name} failed","assets.nav.banner.title":"Assets","assets.nav.banner.description":"Choose which asset you'd like to access","assets.projects.nav.banner.description":"Choose a project associated with this asset","assets.projects.nav.banner.project.selected":"Currently selected project","assets.properties.identifier.label":"ID Code","assets.properties.name.label":"Name","assets.properties.address.label":"Address","assets.properties.coordinates.label":"Lat, Long","assets.properties.latitude.label":"Latitude","assets.properties.longitude.label":"Longitude","assets.properties.latitude.placeholder":"(decimal -90 to +90)","assets.properties.longitude.placeholder":"(decimal -180 to +180)","assets.edit.header.label":"Edit Asset","assets.create.header.label":"Create Asset","assets.create.context.title.label":"Asset Options","assets.create.context.import.csv.label":"Import from CSV","assets.create.context.import.excel.label":"Import from Excel","assets.create.identifier.label":"ID Code","assets.create.identifier.placeholder":"An ID such as an alpha-numeric reference to this asset in other systems","assets.create.name.label":"Name","assets.create.address.label":"Address","assets.create.coordinates.label":"Coordinates","assets.create.coordinates.placeholder":"Latitude, Longitude as Decimal","assets.create.new.label":"Create asset","assets.home.context.title.label":"Asset","assets.home.context.create.label":"Create Asset","assets.home.context.delete.label":"Delete Asset","assets.home.context.edit.label":"Edit Asset","assets.home.header.label":"Asset home","assets.photos.header.label":"Photos","assets.photos.capture.header.label":"Capture photos","assets.documents.header.label":"Documents","assets.expenses.header.label":"Expenses","assets.expenses.add.header.label":"Add expense","assets.settings.header.label":"Asset Settings","assets.card.metrics.projects.label":"{count , plural, one{1 project} other{# projects}}","assets.validation.idname.blank.message":"The ID and name cannot both be blank.","assets.validation.coords.match.message":"Lat and Long must both be empty or both have a value.","projects.nav.banner.title":"Projects","projects.nav.banner.description":"Choose which project you'd like to access","projects.assets.nav.banner.description":"Choose an asset within the project you've selected","projects.views.activity.title":"Activity Feed","projects.views.access.title":"Manage Access","projects.views.assets.title":"Assets","projects.views.chat.title":"Project Chat","projects.views.tasks.title":"Tasks","projects.views.template.title":"Project Template","projects.views.timer.title":"Time Log","projects.properties.name.label":"Project name","projects.properties.description.label":"Description","projects.child.milestone_simple.label":"milestone","projects.child.milestone.label":"project milestone","projects.child.templateMilestone.label":"template milestone","projects.child.task_simple.label":"task","projects.child.task.label":"project task","projects.child.templateTask.label":"template task","projects.child.customTask.label":"custom task","projects.child.assetProject.label":"asset","projects.current.label":"Project: {name}","projects.clone.no.project.message":"No project selected to clone.","projects.tabs.tasks.list.title":"Tasks","projects.tabs.tasks.template.title":"Project Template","projects.tabs.assets.list.title":"Assets","projects.home.header.label":"Project","projects.home.contactinfo.header.label":"Project Lead","projects.home.activity.label":"Project Activity","projects.home.manage.link.label":"Manage projects assets","projects.home.context.title.label":"Project","projects.home.context.create.label":"Create Project","projects.home.context.clone.label":"Clone Project","projects.home.context.assets.manage.label":"Manage Assets","projects.home.context.edit.label":"Edit Project","projects.home.context.delete.label":"Delete Project","projects.create.new.label":"Create new project","projects.assets.choose":"Choose project assets","projects.assets.create":"Create new project asset","projects.select.header.label":"Choose Projects","projects.select.label":"Select a Project","projects.select.edit.label":"Edit","projects.select.delete.label":"Delete","projects.filters.status.header.label":"Task Status","projects.create.header.label":"Create project","projects.create.name.label":"Project name","projects.create.description.label":"Project description","projects.create.options.label":"Advanced Options","projects.create.private.label":"Make Private","projects.create.location.orientation.label":"Project is asset based","projects.create.success.message":"New Project Saved!","projects.edit.header.label":"Edit Project","projects.edit.details.label":"Edit project details","projects.edit.milestones.label":"Edit project milestones","projects.edit.tasks.label":"Edit project tasks","projects.assets.context.manage.label":"Manage Assets in Project","projects.assets.manage.header.label":"Manage Assets","projects.assets.manage.asset.selected.label":"Selected Asset","projects.assets.manage.toggle.new.label":"Create New Asset","projects.assets.manage.toggle.existing.label":"Choose Existing Asset","projects.assets.ask_add_to_project.label":"Add asset {assetName} to project {projectName}?","projects.assets.not_in_project.label":"{assetName} is not in {projectName}","projects.selectprojectassets.header.label":"Project assets","projects.livemap.header.label":"Live map","projects.manage.header.label":"Manage Project","projects.import.header.label":"Import Project Data","projects.import.select.label":"Select CSV file","projects.import.csv.label":"Or paste in CSV Data","projects.import.progress.message":"Importing {name} data","projects.import.success.message":"Import Completed","projects.import.failure.message":"Import Failed","projects.import.template.label":"Download Template","projects.import.instructions.label":"Help","projects.import.no.data.message":"We did not detect any tasks to import","projects.export.header.label":"Export Project Data","projects.export.assets.header.label":"Export Project Asset Data","projects.export.failure.message":"Export Failed","projects.export.assets.message":"Download the latest snapshot of all assets in this project","projects.filter.assets.many":"Many assets","projects.filter.assets.single":"Single asset","projects.filter.assets.none":"None","projects.filters.in_project.header.label":"In Current Project","projects.filters.in_project.yes.label":"Yes","projects.filters.in_project.no.label":"No","projects.card.metrics.assets.label":"{count , plural, one{1 asset} other{# assets}}","project.export.no.assets.message":"There are no assets in this project to export","project.export.no.data.message":"There is no data in this project to export","project.child.create.permission.denied.message":"You do not have permission to create a {child} in this project.","project.icon.download.title":"Download all files","project.button.create.task.label":"Add task","project.button.create.milestone.label":"Add milestone","project.button.collapse.milestones.label":"Collapse all milestones","project.button.expand.milestones.label":"Expand all milestones","personnel.select.header.label":"Choose Person or Team","personnel.select.null.label":"No one","personnel.home.header.label":"Personnel","personnel.home.list.header.label":"Individuals TODO:this has changed, see brandon's additions","personnel.home.list.header.individuals.label":"Individuals","personnel.home.list.header.teams.label":"Teams","personnel.home.context.title.label":"Personnel","personnel.home.context.person.add.label":"Add Contact","personnel.home.context.person.invite.label":"Invite to Organization","personnel.home.context.person.invite.title":"Send Invite","personnel.home.context.person.delete.label":"Delete Contact","personnel.home.context.team.add.label":"Add {teamType}","personnel.home.context.team.list.add.label":"Add Other Team Type","personnel.home.context.teams.manage.types.label":"Manage Team Types","personnel.home.context.teams.delete.label":"Delete {teamType}","personnel.home.context.members.manage.label":"Manage Organization Members","personnel.presence.legacy.message":"Haven't seen them...","personnel.presence.online.message":"Online","personnel.presence.away.message":"Away","personnel.presence.last_seen.message":"Last Seen {ago}","profile.create.contact.success.message":"Added {name}!","user.tag.label":"User","personnel.individuals.profile.header.label":"Profile","profile.details.create.header.label":"New Person","profile.details.create.avatar.label":"Profile photo","profile.details.create.name.display.label":"Display name","profile.details.create.name.display.placeholder":"Display name","profile.details.create.name.first.label":"First name","profile.details.create.name.first.placeholder":"First name","profile.details.create.name.last.label":"Last name","profile.details.create.name.last.placeholder":"Last name","profile.details.create.role.label":"Role","profile.details.create.contact":"Contact","profile.details.create.role.placeholder":"Their role in {orgName}","profile.details.create.phone.label":"Phone number","profile.details.create.phone.placeholder":"Phone number","profile.details.create.email.label":"Email address","profile.details.create.email.placeholder":"Email address","teams.types.manage.header.label":"Edit Team Types","teams.types.create.header.label":"Create a Team Type","teams.types.create.name.label":"Name","teams.types.create.name.placeholder":"A name for this kind of team","teams.types.create.name.plural.label":"Name Plural","teams.types.create.name.plural.placeholder":"A name for many of this kind of team","teams.types.create.description.label":"Team Description","teams.types.create.description.placeholder":"A default description for each team of this type","teams.types.create.success.message":"Saved {teamType}!","teams.details.header.label":"Team Details","teams.details.context.title.label":"Options: {teamType}","teams.details.context.delete.label":"Delete","teams.details.members":"Members","teams.details.edit.header.label":"Manage {teamType}","teams.details.edit.name.label":"Name","teams.details.edit.name.placeholder":"Enter a name","teams.details.edit.members.expected.label":"Members chosen","teams.details.edit.members.expected.more.label":"{moreCount , plural, =0{And no others} one{And 1 other} other{And # others}}","team.types.select.header.label":"Select a Team Type","tasks.views.requirements.title":"Requirements","tasks.views.requirements.template.title":"Template Requirements","tasks.views.timer.title":"Time Log","tasks.views.activity.title":"Activity Feed","tasks.views.access.title":"Manage Access","tasks.views.chat.title":"Task Chat","tasks.addreq.label":"Add New Requirement","tasks.item.file.label":"Files","tasks.item.form.label":"Forms","tasks.context.title.label":"Tasks","tasks.context.tasks.create.label":"Create Task","tasks.context.tasks.import.label":"Import Project Data","tasks.context.tasks.export.label":"Export Project Data","tasks.context.assets.export.label":"Export Project Asset Data","tasks.context.project.assets.add.label":"Add Asset to Project","tasks.context.project.assets.remove.label":"Remove Asset from Project","tasks.header.label":"Tasks","tasks.details.addreq.header.label":"Add requirement","tasks.default.assignment.label":"Default Assignment","tasks.edit.header.label":"Edit Task","tasks.create.header.label":"Create task","tasks.create.name.label":"Task name","tasks.create.description.label":"Task description","tasks.create.milestone.label":"Milestone","tasks.create.scope.label":"Task scope","tasks.requirements.status.not_started.label":"Not started","tasks.requirements.status.no_requirements.label":"No requirements","tasks.type.all.label":"All","tasks.type.files.label":"Files","tasks.type.forms.label":"Forms","tasks.info.header.label":"Info","tasks.info.name":"Name:","tasks.info.description":"Description:","tasks.info.milestone":"Milestone:","tasks.misc.label":"Misc","tasks.misc.description":"These Tasks are not associated with a milestone","tasks.template.upload.error.message":"You cannot upload files to a template!","tasks.icon.download.title":"Download all task files","tasks.icon.download.title.short":"Download all files","tasks.details.name.label":"Name:","tasks.details.description.label":"Description:","tasks.details.scheduleddate.label":"Scheduled:","tasks.details.completionpercentage.label":"Complete:","tasks.details.assignedTo.label":"Assignee:","tasks.details.context.title.label":"Task Details","tasks.details.context.cancel.label":"Cancel","tasks.details.context.details.edit.label":"Edit Task Details","tasks.details.context.addreq.file.label":"Add File Requirement","tasks.details.context.addreq.form.label":"Add Form Requirement","tasks.details.context.download.files.label":"Download Task Files","tasks.details.context.export.timer.label":"Download Time Data","tasks.details.context.delete.label":"Delete Task","tasks.details.context.show.info.label":"Show Info","tasks.details.reqs.rejected.label":"Has {count , plural, one{1 Rejected Requirement} other{# Rejected Requirements}}","tasks.details.configuredbytemplate.warning.label":"Configured by template","tasks.details.configuredbytemplate.warning.message":"You may only edit the description. The task name and milestone are determined in the template.","tasks.create.options.entire.project.label":"Add to future assets?","tasks.create.options.entire.project.retroactve.label":"Include all existing assets?","tasks.create.options.existing.label":"Include all existing assets?","tasks.create.options.existing.exclude.complete.label":"Exclude complete assets?","requirements.create.options.entire.project.label":"Add to future assets?","requirements.create.options.existing.label":"Include all existing assets?","requirements.create.options.existing.exclude.complete.tasks.label":"Exclude assets where this task is marked complete?","tasks.create.success.message":"New Task Saved!","milestones.create.success.message":"New Milestone Saved!","milestones.edit.header.label":"Edit Milestone","milestones.create.header.label":"Create Milestone","milestones.create.name.label":"Name","milestones.create.description.label":"Description","tasks.context.milestones.create.label":"Create Milestone","milestones.context.title.label":"Options: {milestoneName}","milestones.context.edit.label":"Edit Milestone","milestones.context.delete.label":"Delete Milestone","tasks.properties.name.label":"Name","tasks.properties.description.label":"Description","tasks.properties.duration.label":"Duration","tasks.properties.milestone.label":"Milestone","tasks.properties.milestone.null.message":"Misc","tasks.properties.assignedTo.null.message":"Unassigned","asset-tasks.properties.name.label":"Name","asset-tasks.properties.description.label":"Description","asset-tasks.properties.duration.label":"Duration","asset-tasks.properties.milestone.label":"Milestone","asset-tasks.properties.milestone.null.message":"Misc","asset-tasks.properties.assignedTo.null.message":"Unassigned","milestones.properties.description.null.message":"No Description","requirements.views.files.title":"Files","requirements.views.form.title":"Form","requirements.views.activity.title":"Activity Feed","requirements.views.chat.title":"Requirement Chat","fulfillments.photos.header.label":"Capture Photo","fulfillments.context.delete.label":"Delete Requirement","requirements.details.show.label":"Show","requirements.details.hide.label":"Hide","requirements.details.name.label":"Name","requirements.details.description.label":"Description","requirements.context.details.edit.label":"Edit Requirement's Details","requirements.create.success.message":"New Requirement Saved!","requirements.details.configuredbytemplate.warning.label":"Configured by template","requirements.details.configuredbytemplate.warning.message":"You may not edit the name. It is determined in the template.","requirements.files.header.label":"Upload Files","requirements.files.details.show.label":"Show","requirements.files.details.hide.label":"Hide","requirements.files.details.name.label":"Name","requirements.files.details.min.label":"Minimum files","requirements.files.details.min.label.short":"Min. files","requirements.files.details.max.label":"Maximum files","requirements.files.details.max.label.short":"Max. files","requirements.files.add.enforced.label":"Enforce file count","requirements.files.details.enforced.label":"File count is enforced","requirements.files.details.description.label":"Description","requirements.files.details.count.label":"File Count","requirements.files.details.approximate.label":"Manual-submit","requirements.files.context.title.label":"Requirement Options","requirements.files.context.retyuploads.label":"Retry Uploads","requirements.files.context.cancel.label":"Cancel","requirements.files.context.pickfile.label":"Select File","requirements.files.context.comments.label":"Comments","requirements.files.context.download.files.label":"Download All Files","requirements.files.item.file.title":"Total files uploaded:","requirements.files.item.has.uploads.title":"Files in the upload queue:","requirements.files.buttons.download.label":"Download all requirement files","requirements.files.buttons.download.label.short":"Download files","requirements.files.buttons.camera.label":"Open camera","requirements.files.buttons.video.label":"Open video camera","requirements.files.buttons.upload.label":"Upload files","requirements.files.buttons.upload.label.ios":"Upload iOS photos","requirements.files.view.browser.placeholder.title":"Upload your files here","requirements.files.view.mobile.placeholder.title":"Take photo or upload files","requirements.files.view.browser.placeholder.label":"Drag-&-drop files right here. Or simply click the «Upload files» button above.","requirements.files.view.mobile.placeholder.label":"Click the «Open camera» button to take a picture and upload it. Or click the «Upload files» button to select a file on your device.","requirements.item.collapse.label":"Show names only","requirements.item.expand.label":"Show normal cards","requirements.forms.form.label":"Form","requirements.forms.form.placeholder":"No Form Selected...","requirements.files.create.header.label":"Create File Requirement","requirements.files.edit.header.label":"Edit File Requirement","requirements.forms.create.header.label":"Create Form Requirement","requirements.forms.edit.header.label":"Edit Form Requirement","requirements.status.change.error.samestatus.message":"You are trying to assign the same status!","requirements.status.change.error.incomplete.message":"You need the minimum file count!","requirements.status.change.error.pending.message":"You can't directly reset the status to pending!","requirements.status.change.error.invalid.message":"You made an impossible selection!","fulfillments.files.selected.context.title":"File Options","fulfillments.files.context.download.file.label":"Download File","fulfillments.files.context.replace.file.label":"Archive and Replace File","fulfillments.files.context.load.archived.label":"Load Archived Files","fulfillments.files.context.delete.file.label":"Delete Archived File","fulfillments.files.context.delete.fulfillment.label":"Delete File","files.uploads.pending.label":"Pending Upload","files.uploads.uploading.label":"Uploading","files.uploads.uploaded.label":"Finishing Upload","requirements.context.title.label":"Options: {requirementName}","requirements.context.download.files.label":"Download All Files","requirements.context.delete.label":"Delete Requirement","requirements.file.add.subheader.label":"Add new file requirement","requirements.photo.edit.header.label":"Update","requirements.file.edit.subheader.label":"Edit file requirement","requirements.document.edit.header.label":"Update","requirements.document.edit.subheader.label":"Edit document requirement","requirements.default.add.entire.project.label":"Add to all assets?","requirements.default.add.entire.project.retroactve.label":"Include all existing assets?","tasks.item.files.label":"Files","tasks.item.requirements.files.label":"File Requirements","tasks.item.requirements.status.rejection.header.label":"Rejection","tasks.item.requirements.status.rejection.reason.label":"Rejection rationale","requirements.status.archive.title.label":"Status History","requirements.status.archive.by.user.label":"by","requirements.fulfillment.archive.by.user.label":"by","requirements.fulfillment.archive.file.count.label":"Files:","requirements.card.current":"Current","requirements.card.reject":"Reject","requirements.card.approve":"Approve","requirement.card.filename":"File Name","file-requirements.properties.name.label":"Name","file-requirements.properties.description.label":"Description","file-requirements.properties.minimumFileCount.label":"Minimum Files","file-requirements.properties.maximumFileCount.label":"Maximum Files","file-requirements.properties.countIsEnforced.label":"File count is enforced","asset-file-requirements.properties.name.label":"Name","asset-file-requirements.properties.description.label":"Description","asset-file-requirements.properties.minimumFileCount.label":"Minimum Files","asset-file-requirements.properties.maximumFileCount.label":"Maximum Files","asset-file-requirements.properties.countIsEnforced.label":"File count is enforced","requirements.files.upload.denied.message":"You do not have permission to upload to {name}","requirements.files.upload.denied.status.message":"Uploading to requirements is disabled when the requirement is Cancelled/Approved. Please change task status or choose another task","tasks.files.upload.denied.status.message":"Uploading to requirements is disabled when the task is Cancelled/Approved. Please change task status or choose another task","requirements.list.forms.header":"Forms","requirements.list.files.header":"Files","schedules.home.header.label":"Schedule","schedules.home.list.header.today.label":"Today","schedules.home.list.header.thisweek.label":"This week","schedules.home.list.header.nextweek.label":"Next week","schedules.add.header.label":"Create event","schedules.event.name.label":"Event Name","schedules.event.description.label":"Event Description","schedules.event.dt.label":"Date and Time","schedules.event.project.label":"Project","schedules.event.asset.label":"Asset","schedules.event.Participants.label":"Participants","app.settings.header.label":"Settings","app.settings.file.uploads.label":"File Cache","app.settings.file.uploads.pending.link.label":"View pending uploads","app.settings.file.uploads.pending.header.label":"Pending Uploads","app.settings.file.uploads.pending.buttons.retry.label":"Retry","app.settings.file.uploads.pending.documents.label":"Documents to upload","app.settings.file.uploads.pending.photos.label":"Photos to upload","app.settings.file.uploads.pending.tests.label":"Tests to upload","app.settings.file.uploads.retry.auto.label":"Retry uploads when app starts","app.settings.file.uploads.cached.link.label":"View uploaded files","app.settings.file.uploads.cache.header.label":"Uploaded Files","app.settings.file.uploads.cache.buttons.clear.label":"Empty","app.settings.language.select.label":"Language","app.settings.metrics.header.label":"Local Analysis (Disable to improve performance)","app.settings.camera.heading.label":"Camera settings","app.settings.camera.cropping.allow.label":"Allow cropping","app.settings.camera.photo.size.label":"Photo size","app.settings.camera.photo.quality.label":"JPG quality","app.settings.camera.orientation.fix.label":"Change orientation mode","app.settings.camera.video.quality.label":"Video quality","app.settings.camera.copy.gallery.label":"Save media to gallery","app.settings.audio.n10ns.heading.label":"Sound Notifications","app.settings.audio.n10ns.enable.label":"Enable Sound Notifications","app.settings.audio.n10ns.volume.label":"Volume","app.settings.auth.header.label":"User data","app.settings.auth.password.header.label":"Password","app.settings.auth.password.old.label":"Old password","app.settings.auth.password.newone.label":"New password","app.settings.auth.password.newtwo.label":"Confirm","app.settings.auth.password.submit.label":"Change password","app.settings.auth.logout.label":"Log Out","app.settings.about":"About","app.settings.version":"Version","app.settings.language.english":"English","app.settings.notifications.header.label":"Notifications","app.settings.notifications.push.label":"Send notifications to my device","app.settings.notifications.email.label":"Send notifications to my email","forms.views.list.header.label":"Forms","forms.views.create.header.label":"Create Form","forms.views.update.header.label":"Update Form","forms.context.new.label":"New","forms.context.reset.label":"Clear Changes","forms.context.export.reqs.label":"Export All Form Requirement Data","forms.context.edit.label":"Edit Form","forms.context.delete.label":"Delete Form","forms.export.header.label":"Export Form Data","forms.export.subheader.label":"Exporting all form data in requirements.","forms.response.default.placeholder":"(none)","forms.default.options.required.label":"Response is required","forms.text_short.options.isnumber.label":"Must be a number","forms.text_short.header.label":"Short Text","forms.text_long.options.minlength.label":"Minimum characters","forms.text_long.options.maxlength.label":"Maximum characters","forms.text_long.input.placeholder":"Input here","forms.text_long.header.label":"Long Text","forms.date.options.includedate.label":"Include date","forms.date.options.includeyear.label":"Include year","forms.date.options.includetime.label":"Include time","forms.date.header.label":"Date/Time","forms.duration.options.isduration.label":"Time is a duration","forms.duration.options.defaultunit.label":"Default Unit","forms.duration.options.units.seconds.label":"Seconds","forms.duration.options.units.minutes.label":"Minutes","forms.duration.options.units.hours.label":"Hours","forms.duration.options.units.days.label":"Days","forms.duration.options.units.weeks.label":"Weeks","forms.duration.options.units.months.label":"Months","forms.duration.options.units.years.label":"Years","forms.duration.header.label":"Time Duration","forms.scale.options.startnumber.label":"Starting value","forms.scale.options.endnumber.label":"Ending value","forms.scale.options.step.label":"Increment by/Step Size","forms.scale.options.range.label":"Select range A to B","forms.list.options.items.label":"List items","forms.list.header.label":"List","forms.list.items":"Items","forms.list.options.selectmany.label":"Select more than one","forms.list.select.one.placeholder":"Select an Option","forms.location.options.captureuserlocation.label":"Automatically select user's location","forms.location.verify":"Verify your location","forms.location.input.placeholder":"Type location","forms.location.description":"This is a location item","forms.location.locate.me":"Locate me","forms.location.header.label":"Location","forms.file.header.label":"File Attachment","forms.file.options.expectedfilecount.label":"Expected file/photo count","forms.file.options.expectedfilecountapproximation.label":"Expecting an exact number of files/photos","forms.reference_link.header.label":"Relational Reference","forms.reference_link.options.domainclasses.label":"Linked types","forms.reference_link.options.selectmany.label":"Select more than one","forms.reference_link.searchable":"Searchable data","forms.reference_link.users.teams":"Users/Teams","forms.range.header.label":"Range","forms.build.type":"Field type","forms.build.add.field":"Add Field","forms.display.title":"Title","forms.display.description":"Description","forms.display.example.text":"Example text","forms.display.required":"Required?","forms.display.edit":"Edit","forms.display.choose.file":"Choose file","forms.options.advanced":"Advanced Options","forms.select.header.label":"Choose a Form","forms.buttons.save.changes.no.label":"No Changes","default.filters.modal.header.label":"Filters","requirements.filter.header.label":"Filter Reqs","requirements.statuses.filters.header.label":"Statuses","requirements.statuses.filters.all.label":"All Statuses","tasks.sorting.header.label":"Sort By","tasks.sorting.types.name.label":"Name","tasks.sorting.types.date.label":"Date","tasks.filters.types.header.label":"Task Type","tasks.filters.types.project.label":"In Template","tasks.filters.types.asset.label":"Custom","tasks.filters.status.header.label":"Task Status","tasks.filters.schedule.header.label":"Schedule Date","tasks.filters.schedule.subheader.label":"Filter by schedule","tasks.filters.date.subheader.label":"Filter by date","tasks.filters.date.before.label":"Before date","tasks.filters.date.after.label":"After date","tasks.filters.user.header.label":"Assigned","tasks.filters.user.byme.label":"By me","tasks.filters.user.tome.label":"To me","tasks.filters.user.toteam.label":"To my teams","tasks.filters.user.unassigned.label":"To no one","tasks.filters.user.other.label":"To anyone","requirements.files.list.header.label":"Files","requirements.files.list.context.title.label":"File Options","requirements.files.list.context.download.all.label":"Download All Files","requirements.files.list.milestone.context.title.label":"Milestone Options","requirements.files.list.milestone.context.download.all.label":"Download All Milestone Files","requirements.files.list.file.context.title.label":"File Options","tasks.schedule.tasktitle.label":"Task Name","tasks.schedule.project.label":"Project","tasks.schedule.asset.label":"Asset","tasks.schedule.header.label":"Task Schedule","tasks.schedule.duedate.label":"Due date","tasks.override.duedate.label":"Edit Due date","tasks.schedule.assignedto.label":"Assigned to","tasks.schedule.reason.label":"Reason for change","tasks.schedule.complete.label":"Mark Complete","tasks.schedule.completedate.label":"Complete/Approved","tasks.schedule.revert.label":"Unmark Complete","tasks.schedule.by.time.label":"by","tasks.override.submitted_date.label":"Edit Submission Date","tasks.status.at.time.label":"at","tasks.schedule.disallowed.title":"Invalid Status","tasks.schedule.disallowed.message":"This task is currently {status}. You may not edit the schedule.","tasks.schedule.same.message":"No change detected","tasks.schedule.submittedOn.required.message":"Submitted date cannot be cleared. You must change the status instead.","data.tags.create.header.label":"Create Data Tag","data.tags.update.header.label":"Edit Data Tag","data.tags.create.name.label":"Name","data.tags.create.description.label":"Description","data.tags.create.success.message":"Saved {tagName}!","data.tags.name.restriction.message":"You may only change the name of a tag within the first hour after creating it.","data.tags.manage.links.label":"Select Data Tags","data.tags.manage.links.short.label":"Select Tags","data.tags.manage.links.title":"Manage the selected Data Tags.","data.tags.data.edit.label":"Edit Data","data.tags.data.edit.title":"Edit the data in the Data Tag forms.","data.tags.manage.header.label":"Selected Data Tags","data.tags.manage.context.title.label":"Data Tags Options","data.tags.manage.context.manage.label":"Manage Data Tags","data.tags.manage.toggle.new.label":"Create a tag","data.tags.manage.toggle.existing.label":"Select tags","data.tags.errors.failed.to.load.message":"Failed to load data tag screen!","data.tags.header.label":"Data Tags","data.tags.tagged.items":"Tagged Items","invites.manage.header.label":"Members","invites.manage.resend.label":"Resend","invites.edit.header.label":"Update Invite","invites.create.header.label":"Send Invite","invites.create.send.label":"Send","invites.create.success.message":"Sending invite to {recipient}","invites.create.invitee.name.label":"Name","invites.create.invitee.name.placeholder":"Address to","invites.create.invitee.email.label":"Email","invites.create.invitee.email.placeholder":"A valid email address","invites.create.invitee.role.label":"Role","timers.header.label":"Task Timer","timers.start.label":"Start timer","timers.pause.label":"Pause","timers.resume.label":"Resume","timers.stop.label":"Stop","timers.menu.header.label":"Timers","timers.menu.active.label":"Active","timers.menu.paused.label":"Paused","timers.export.header.label":"Time Data Export","timers.export.subheader.label":"Exporting time data for {typeName}:","timers.export.parent.label":"In {parentType}:","timers.export.format.header.label":"Select Report Format","timers.export.format.xlsx.label":"Excel","timers.export.format.csv.label":"CSV","timers.feed.placeholder.label":"No time logged.","timers.feed.today.label":"Today","timers.feed.worker.label":"Worker","timers.feed.started.label":"Started","timers.feed.ended.label":"Ended","timers.feed.duration.label":"Duration (hours:minutes)","timers.feed.location.label":"Location","datepicker.today":"Today","datepicker.set":"Set","timepicker.set.time":"Set time","timepicker.now":"Now","entity.placeholder.select":"Select one","entity.placeholder.create":"Create one","entity.placeholder.org.none":"No organizations yet","entity.placeholder.org.none.selected":"No organization selected","entity.placeholder.asset.none":"No assets yet","entity.placeholder.asset.none.selected":"No asset selected","entity.placeholder.project.none":"No projects yet","entity.placeholder.project.none.selected":"No project selected","entity.placeholder.or":"or","onboarding.success.header":"Setup Complete","onboarding.success":"You're all set!","onboarding.new.organization":"You can create your first organization on the next screen.","onboarding.get.started":"Get Started","onboarding.skip":"Skip this","onboarding.invite.list.header":"Invites List","onboarding.join.header":"Join","onboarding.join.displayname":"Display Name","onboarding.join.first":"First Name","onboarding.join.last":"Last Name","onboarding.join.email":"Email","onboarding.join.password":"Password","onboarding.join.password.confirm":"Confirm Password","onboarding.join.password.confirm.match.message":"Passwords must match","onboarding.join.login.label":"Log In","onboarding.join.signup.label":"Sign Up","onboarding.join.sendemail.label":"Send Email","onboarding.join.resetpassword.label":"Don't remember your password?","onboarding.join.resetpassword.message":"Please enter your email address. We will send you an email to reset your password.","onboarding.welcome.header":"Welcome","onboarding.welcome.invited":"You have been invited to join the organization","onboarding.welcome.by":"by","onboarding.welcome.newuser":"New User?","onboarding.welcome.signup":"Create an Account","onboarding.welcome.have.account":"Already have an account?","onboarding.welcome.login":"Log In","onboarding.welcome.to.login":"Go to Login","onboarding.welcome.invitation":"You have been invited to join the organization {organizationName} by {inviterName}.","auth.error.credentials.message":"Wrong email or password.","auth.error.blocked.message":"Login blocked after too many failed login attempts.","auth.error.other.message":"An unexpected occurred.","onboarding.invite.accepted.header":"Invite Accepted","onboarding.invite.accepted.message":"You can view tasks assigned to you and tasks you want to pay attention to on the next screen.","onboarding.invite.expired.header":"Invite code has expired.","onboarding.invite.dne.message":"Invite code is invalid or does not exist.","onboarding.invite.request.prompt.message":"Request New Code","onboarding.invite.request.progress.message":"Requesting","onboarding.invite.request.contact.message":"If you believe this is an error, please contact the person that invited you.","onboarding.invite.request.success.message":"Invite code requested, please check your email.","onboarding.invite.request.error.message":"Failed to request a new invite code. Please contact the person that invited you.","onboarding.error.message":"An unexpected error occurred.","onboarding.go.home":"Go to Explore","navigation.header.title":"Explore","video.chat.invite.header":"Invite to Call","video.chat.invite.message":"Select people to invite to the call.","video.chat.invite.add.label":"Add Person","video.chat.title":"Video Chat","video.chat.call.start.label":"Start call","video.chat.call.end.label":"End call","icon.camera.title":"Take Photo","icon.chat.title":"Chat","icon.edit.title":"Edit","icon.delete.title":"Delete","icon.close.title":"Close","icon.add.title":"Add","icon.addtask.title":"Add task","icon.addreq.title":"Add requirement","icon.filter.title":"Filter list","icon.search.title":"Search","icon.options.title":"Options","icon.sweep.title":"Remove completed items","icon.show.title":"Show","icon.hide.title":"Hide","icon.showall.title":"Show all","icon.hideall.title":"Hide all","icon.pin.title":"Pin","icon.pinning.title":"Pinning...","icon.unpin.title":"Unpin","icon.unpinning.title":"Unpinning...","icon.download.title":"Download","icon.upload.title":"Upload files","icon.replace.title":"Replace file","icon.details.title":"View details","icon.toggleview.title":"Toggle view mode","icon.manageAccess.title":"Manage Access","icon.info.title":"Info","icon.timer_feed.title":"Time Feed","icon.feed.title":"Activity Feed","icon.export.tasks.title":"Export Tasks","roles.manage.context.label":"Manage Roles","roles.manage.header.label":"Manage Roles","access.manage.header.label":"Manage Access","access.manage.project.context.label":"Manage Project Access","access.manage.add.member.label":"Add a member","files.not.found.message":"No files were found to download.","files.request.error.message":"An error occurred","delete.permission.denied.message":"You do not have permission to delete {label}","server.default.error.message":"An unexpected error occurred","search.placeholder":"Search..."};
 
 /***/ }),
 /* 2179 */
@@ -280720,12 +280693,19 @@ var LoginEpics = exports.LoginEpics = function (_AbstractEpics) {
   }, {
     key: 'onRefreshUser',
     value: function onRefreshUser(action$) {
+      var _this2 = this;
+
       return action$.ofType(_refreshUser.refreshUserRequest.actions.requestSuccess.TYPE).mergeMap(function (action) {
-        var authData = action.payload.ajaxResponse.response;
-        if (authData.idToken) {
-          return _Observable.Observable.from([(0, _actions.tokenRefreshed)({ token: authData.idToken }), (0, _actions.authFirebase)(authData.firebaseToken)]);
-        } else {
-          return _Observable.Observable.merge((0, _token.removeRefreshToken)(), _Observable.Observable.of(_refreshUser.refreshUserRequest.actions.requestError({ err: new Error('Refresh token is not valid') })));
+        try {
+          var authData = action.payload.ajaxResponse.response;
+          if (authData.idToken) {
+            return _Observable.Observable.from([(0, _actions.tokenRefreshed)({ token: authData.idToken }), (0, _actions.authFirebase)(authData.firebaseToken)]);
+          } else {
+            return _Observable.Observable.from([(0, _token.removeRefreshToken)(), _refreshUser.refreshUserRequest.actions.requestError({ err: new Error('Refresh token is not valid') })]);
+          }
+        } catch (err) {
+          _this2.logger.error('onRefreshUser (sync error)', err);
+          return _Observable.Observable.of(_refreshUser.refreshUserRequest.actions.requestError({ err: err }));
         }
       }).filter(function (action) {
         return !!action;
@@ -416884,32 +416864,40 @@ function FilePickerFactory($contextMenu, DeviceServices, FileDialog, FileStack) 
     }
 
     function openCamera(filePath, fileName) {
-      //console.log('open the camera', filePath, fileName);
-
       filePath = filePath ? filePath : options.getNewFilePath();
       fileName = fileName ? fileName : options.getNewFileName();
 
       if (DeviceServices.supportsCamera()) {
         //TODO(files): revise the method signature after local file saving has been reworked to no longer rename things
         return DeviceServices.capturePhoto(filePath, fileName).then(function (result) {
-          return options.onSuccess(result, /* fromCamera: */true);
-        }, options.onError);
+          if (Array.isArray(result)) {
+            result.forEach(function (item) {
+              return options.onSuccess(item, true);
+            });
+          } else {
+            options.onSuccess(result, true);
+          }
+        }).catch(options.onError);
       } else {
         return Promise.reject('FilePickerFactory.openCamera camera not supported on current platform');
       }
     }
 
     function openVideo(filePath, fileName) {
-      //console.log('open the camera', filePath, fileName);
-
       filePath = filePath ? filePath : options.getNewFilePath();
       fileName = fileName ? fileName : options.getNewFileName();
 
       if (DeviceServices.supportsVideo()) {
         //TODO(files): revise the method signature after local file saving has been reworked to no longer rename things
         return DeviceServices.captureVideoStream(filePath, fileName).then(function (result) {
-          return options.onSuccess(result, /* fromCamera: */false);
-        }, options.onError);
+          if (Array.isArray(result)) {
+            result.forEach(function (item) {
+              return options.onSuccess(item, true);
+            });
+          } else {
+            options.onSuccess(result, true);
+          }
+        }).catch(options.onError);
       } else {
         return Promise.reject('FilePickerFactory.openVideo video not supported on current platform');
       }
@@ -419001,7 +418989,9 @@ FetchUtils.prototype.rawRequest = function rawRequest(url, request) {
     };
     handleCordovaBody(request, config);
     if ((request.method === 'POST' || request.method === 'PATCH') && !request.body) {
-      config.data = {};
+      config.headers['Content-Type'] = 'application/json';
+      config.serializer = 'json';
+      config.data = { message: 'ok' };
     }
     return sendCordovaRequest(url, config, request);
   }
@@ -419036,6 +419026,30 @@ function simpleResponse(response) {
     }
   }
 }
+
+FetchUtils.prototype.rawRequestWithAuth = function requestWithAuth(url, request) {
+  if (!this.hasValidToken()) return Promise.reject(new Error('Authentication Expired'));
+
+  var token = (0, _reducers.getApiToken)(this.$ngRedux.getState());
+  if (!(0, _isObject2.default)(request.headers)) {
+    request.headers = {};
+  }
+  request.headers["Accept"] = "application/json";
+  request.headers["Authorization"] = "Bearer " + token;
+  request.headers["Cache-Control"] = "no-cache"; // may need to disable this in production
+
+  if ((0, _DeviceServicesCordova.isWebView)()) {
+    return this.rawRequest(url, request).then(function (response) {
+      if (response.ok) {
+        return response.response;
+      } else {
+        return Promise.reject(response.response);
+      }
+    });
+  }
+
+  return this.rawRequest(url, request);
+};
 
 FetchUtils.getResponse = FetchUtils.prototype.getResponse = function getResponse(response) {
   var contentType = response.headers.get("content-type");
@@ -419114,13 +419128,14 @@ function handleFetchBody(request) {
 function handleCordovaBody(request, config) {
   if (request.body) {
     switch (request.contentType) {
+      default:
+        console.warn('Unhandled fetchUtils.handleCordovaBody case ' + request.contentType);
+      // fallthrough
       case 'json':
         config.headers['Content-Type'] = 'application/json';
         config.serializer = 'json';
         config.data = request.body;
         break;
-      default:
-        console.warn('Unhandled fetchUtils.handleCordovaBody case ' + request.contentType);
       // TODO
     }
   }
@@ -443505,7 +443520,7 @@ module.exports = "<ion-view\r\n  title=\"{{'personnel.home.header.label' | trans
 /* 2996 */
 /***/ (function(module, exports) {
 
-module.exports = "<!--TODO: i18n entire template-->\r\n<ion-view\r\n  title=\"{{'app.settings.header.label' | translate}}\"\r\n  hide-nav-bar=\"true\"\r\n  cache-view=\"false\"\r\n>\r\n  <settings-view-header>\r\n  </settings-view-header>\r\n\r\n  <ion-content padding=\"true\" class=\"has-react-header reduced-tablet-width ionic-scroll scroll-content-false settings\">\r\n    <ion-scroll>\r\n      <!--<input type=\"text\" style=\"position: fixed; left: -10000000px; opacity: 0; height: 0px;\" disabled/>-->\r\n      <input type=\"hidden\" autofocus=\"true\"/>\r\n      <div class=\"item item-divider view-divider extra-divider\" ng-if=\"::showMobileSettings\"\r\n           translate=\"app.settings.file.uploads.label\"></div>\r\n      <div class=\"list\" ng-if=\"::showMobileSettings\">\r\n        <a class=\"item item-icon-right\" ui-sref=\"app.pending-uploads\"\r\n           translate=\"app.settings.file.uploads.pending.link.label\">\r\n          <i class=\"icon ion-chevron-right icon-accessory\"></i>\r\n        </a>\r\n\r\n        <!--<a class=\"item item-icon-right\" ui-sref=\"app.file-cache\"\r\n           translate=\"app.settings.file.uploads.cached.link.label\">\r\n          <i class=\"icon ion-chevron-right icon-accessory\"></i>\r\n        </a>-->\r\n\r\n        <div class=\"item item-toggle\">\r\n          <span translate=\"app.settings.file.uploads.retry.auto.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"settings.autoRetryUploads\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>\r\n      </div>\r\n\r\n      <div class=\"item item-divider view-divider\" translate=\"app.settings.notifications.header.label\"></div>\r\n      <div class=\"list\">\r\n\r\n        <div class=\"item item-toggle\">\r\n          <span translate=\"app.settings.notifications.push.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"settings.enablePushNotifications\" ng-change=\"updatePush(settings.enablePushNotifications)\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>\r\n\r\n        <div class=\"item item-toggle\">\r\n          <span translate=\"app.settings.notifications.email.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"vm.enableEmailNotifications\" ng-change=\"updateEmail(vm.enableEmailNotifications)\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>\r\n      </div>\r\n\r\n      <div class=\"item item-divider view-divider\" translate=\"app.settings.language.select.label\"></div>\r\n      <div class=\"list\">\r\n\r\n        <!--Iterate over translated languages once there is more than 1-->\r\n        <label class=\"item item-radio\">\r\n          <input type=\"radio\" name=\"group\" checked>\r\n          <div class=\"item-content\">\r\n            {{'app.settings.language.english' | translate}}\r\n          </div>\r\n          <i class=\"radio-icon ion-ios-checkmark-empty\"></i>\r\n        </label>\r\n\r\n        <!--<label class=\"item item-radio\">-->\r\n        <!--<input type=\"radio\" name=\"group\">-->\r\n\r\n        <!--<div class=\"item-content\">-->\r\n        <!--Spanish-->\r\n        <!--</div>-->\r\n        <!--<i class=\"radio-icon ion-ios-checkmark-empty\"></i>-->\r\n        <!--</label>-->\r\n      </div>\r\n\r\n\r\n      <div\r\n        class=\"item item-divider view-divider extra-divider\"\r\n        translate=\"app.settings.camera.heading.label\"\r\n        ng-if=\"::showMobileSettings\">\r\n      </div>\r\n      <div class=\"list\" ng-if=\"::showMobileSettings\">\r\n        <!--<div class=\"item item-toggle\">\r\n          <span translate=\"app.settings.camera.cropping.allow.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"settings.allowCameraEditing\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>-->\r\n\r\n        <div class=\"item flex-item\">\r\n          <span class=\"flex-start\" translate=\"app.settings.camera.photo.size.label\"></span>\r\n          <popover-select\r\n            class=\"flex-end\"\r\n            options=\"res.value as res.label for res in cameraResolutions\"\r\n            ng-model=\"settings.cameraResolution\">\r\n          </popover-select>\r\n        </div>\r\n\r\n        <div class=\"item range\">\r\n          <span translate=\"app.settings.camera.photo.quality.label\"></span>\r\n          <span>&nbsp;&nbsp;</span>\r\n          <input type=\"range\" name=\"imageQuality\" min=\"15\" max=\"100\" value=\"{{settings.jpgQuality}}\"\r\n                 ng-model=\"settings.jpgQuality\">\r\n          <span>{{settings.jpgQuality}}%</span>\r\n        </div>\r\n\r\n        <div class=\"item item-toggle\" ng-if=\"::showOrientationMode\">\r\n          <span translate=\"app.settings.camera.orientation.fix.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"settings.correctOrientation\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>\r\n\r\n        <!--<div class=\"item flex-item\">\r\n          <span class=\"flex-start\" translate=\"app.settings.camera.video.quality.label\"></span>\r\n          <popover-select\r\n            class=\"flex-end\"\r\n            options=\"res.value as res.label for res in vidQualities\"\r\n            ng-model=\"settings.vidQuality\">\r\n          </popover-select>\r\n        </div>-->\r\n\r\n        <div class=\"item item-toggle\">\r\n          <span translate=\"app.settings.camera.copy.gallery.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"settings.copyToGallery\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>\r\n      </div>\r\n\r\n\r\n<!--      <div-->\r\n<!--        class=\"item item-divider view-divider extra-divider\"-->\r\n<!--        translate=\"app.settings.audio.n10ns.heading.label\"-->\r\n<!--      >-->\r\n<!--      </div>-->\r\n<!--      <div class=\"list\">-->\r\n\r\n<!--        <div class=\"item item-toggle\">-->\r\n<!--          <span translate=\"app.settings.audio.n10ns.enable.label\"></span>-->\r\n<!--          <label class=\"toggle toggle-balanced\">-->\r\n<!--            <input type=\"checkbox\" ng-model=\"settings.useAudioN10ns\" ng-change=\"updatePush(settings.useAudioN10ns)\">-->\r\n<!--            <div class=\"track\">-->\r\n<!--              <div class=\"handle\"></div>-->\r\n<!--            </div>-->\r\n<!--          </label>-->\r\n<!--        </div>-->\r\n\r\n<!--        <div class=\"item range\">-->\r\n<!--          <span translate=\"app.settings.audio.n10ns.volume.label\"></span>-->\r\n<!--          <span>&nbsp;&nbsp;</span>-->\r\n<!--          <input type=\"range\" name=\"n10nVolume\" min=\"0\" max=\"100\" value=\"{{settings.audioN10nVolume}}\"-->\r\n<!--                 ng-model=\"settings.audioN10nVolume\">-->\r\n<!--          <span>{{settings.audioN10nVolume}}%</span>-->\r\n<!--        </div>-->\r\n<!--      </div>-->\r\n\r\n\r\n      <div\r\n        class=\"item item-divider view-divider\"\r\n        translate=\"app.settings.auth.header.label\"\r\n        ng-hide=\"isSocial\">\r\n      </div>\r\n      <button\r\n        class=\"button logout-button\"\r\n        ng-show=\"showPasswordButton()\"\r\n        translate=\"app.settings.auth.password.submit.label\"\r\n        ng-click=\"changePassword()\">\r\n      </button>\r\n      <div\r\n        class=\"button logout-button\"\r\n        ng-show=\"resetPasswordMode === ButtonState.WORKING\">\r\n        <!-- TODO(i18n): convert to message code if this state uses words -->\r\n        Sending password change email...\r\n      </div>\r\n      <div\r\n        class=\"button logout-button\"\r\n        ng-show=\"resetPasswordMode === ButtonState.SUCCESS\">\r\n        <!-- TODO(i18n): convert to message code if this state uses words -->\r\n        We've emailed you a link to update your password!\r\n      </div>\r\n      <div\r\n        class=\"button logout-button\"\r\n        ng-show=\"resetPasswordMode === ButtonState.ERROR\">\r\n        <!-- TODO(i18n): convert to message code if this state uses words -->\r\n        Uh oh, something went wrong.\r\n        Please try again shortly.\r\n        If the problem continues, please contact us so we can help you.\r\n      </div>\r\n\r\n      <div class=\"spacer\" style=\"height: 20px;\"></div>\r\n      <div class=\"item item-divider view-divider\" translate=\"app.settings.about\"></div>\r\n      <div class=\"item\">{{'app.settings.version' | translate}}: {{::CLIENT_VERSION}}</div>\r\n      <div class=\"spacer\" style=\"height: 20px;\"></div>\r\n\r\n\r\n      <!-- EXPERIMENTAL -->\r\n      <div class=\"item item-divider view-divider\" ng-show=\"displayUploadsSection\"\r\n           ng-if=\"::ENVIRONMENT === ENVIRONMENTS.DEVELOP\">App Updates\r\n      </div>\r\n      <ion-list ng-show=\"displayUploadsSection\" ng-if=\"::ENVIRONMENT === ENVIRONMENTS.DEVELOP\">\r\n        <div class=\"item\" ng-show=\"updateMessage\">{{updateMessage}}</div>\r\n\r\n        <div class=\"item-uploading-container\" ng-show=\"updating\">\r\n          <div class=\"uploading-container\" ng-show=\"uploading\">\r\n            <div class=\"uploading\" style=\"width: {{uploadProgress}}%\"></div>\r\n          </div>\r\n        </div>\r\n      </ion-list>\r\n      <button class=\"button logout-button\" ng-show=\"hasUpdate\" ng-click=\"update()\"\r\n              ng-if=\"::ENVIRONMENT === ENVIRONMENTS.DEVELOP\">Update Now\r\n      </button>\r\n\r\n      <button class=\"button logout-button scroll-padding-bottom\" ng-click=\"logout()\"\r\n              translate=\"app.settings.auth.logout.label\"></button>\r\n    </ion-scroll>\r\n  </ion-content>\r\n</ion-view>\r\n";
+module.exports = "<!--TODO: i18n entire template-->\r\n<ion-view\r\n  title=\"{{'app.settings.header.label' | translate}}\"\r\n  hide-nav-bar=\"true\"\r\n  cache-view=\"false\"\r\n>\r\n  <settings-view-header>\r\n  </settings-view-header>\r\n\r\n  <ion-content padding=\"true\" class=\"has-react-header reduced-tablet-width ionic-scroll scroll-content-false settings\">\r\n    <ion-scroll>\r\n      <!--<input type=\"text\" style=\"position: fixed; left: -10000000px; opacity: 0; height: 0px;\" disabled/>-->\r\n      <input type=\"hidden\" autofocus=\"true\"/>\r\n      <div class=\"item item-divider view-divider extra-divider\" ng-if=\"::showMobileSettings\"\r\n           translate=\"app.settings.file.uploads.label\"></div>\r\n      <div class=\"list\" ng-if=\"::showMobileSettings\">\r\n        <a class=\"item item-icon-right\" ui-sref=\"app.pending-uploads\"\r\n           translate=\"app.settings.file.uploads.pending.link.label\">\r\n          <i class=\"icon ion-chevron-right icon-accessory\"></i>\r\n        </a>\r\n\r\n        <!--<a class=\"item item-icon-right\" ui-sref=\"app.file-cache\"\r\n           translate=\"app.settings.file.uploads.cached.link.label\">\r\n          <i class=\"icon ion-chevron-right icon-accessory\"></i>\r\n        </a>-->\r\n\r\n        <div class=\"item item-toggle\">\r\n          <span translate=\"app.settings.file.uploads.retry.auto.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"settings.autoRetryUploads\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>\r\n      </div>\r\n\r\n      <div class=\"item item-divider view-divider\" translate=\"app.settings.notifications.header.label\"></div>\r\n      <div class=\"list\">\r\n\r\n<!--        <div class=\"item item-toggle\">-->\r\n<!--          <span translate=\"app.settings.notifications.push.label\"></span>-->\r\n<!--          <label class=\"toggle toggle-balanced\">-->\r\n<!--            <input type=\"checkbox\" ng-model=\"settings.enablePushNotifications\" ng-change=\"updatePush(settings.enablePushNotifications)\">-->\r\n<!--            <div class=\"track\">-->\r\n<!--              <div class=\"handle\"></div>-->\r\n<!--            </div>-->\r\n<!--          </label>-->\r\n<!--        </div>-->\r\n\r\n        <div class=\"item item-toggle\">\r\n          <span translate=\"app.settings.notifications.email.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"vm.enableEmailNotifications\" ng-change=\"updateEmail(vm.enableEmailNotifications)\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>\r\n      </div>\r\n\r\n      <div class=\"item item-divider view-divider\" translate=\"app.settings.language.select.label\"></div>\r\n      <div class=\"list\">\r\n\r\n        <!--Iterate over translated languages once there is more than 1-->\r\n        <label class=\"item item-radio\">\r\n          <input type=\"radio\" name=\"group\" checked>\r\n          <div class=\"item-content\">\r\n            {{'app.settings.language.english' | translate}}\r\n          </div>\r\n          <i class=\"radio-icon ion-ios-checkmark-empty\"></i>\r\n        </label>\r\n\r\n        <!--<label class=\"item item-radio\">-->\r\n        <!--<input type=\"radio\" name=\"group\">-->\r\n\r\n        <!--<div class=\"item-content\">-->\r\n        <!--Spanish-->\r\n        <!--</div>-->\r\n        <!--<i class=\"radio-icon ion-ios-checkmark-empty\"></i>-->\r\n        <!--</label>-->\r\n      </div>\r\n\r\n\r\n      <div\r\n        class=\"item item-divider view-divider extra-divider\"\r\n        translate=\"app.settings.camera.heading.label\"\r\n        ng-if=\"::showMobileSettings\">\r\n      </div>\r\n      <div class=\"list\" ng-if=\"::showMobileSettings\">\r\n        <!--<div class=\"item item-toggle\">\r\n          <span translate=\"app.settings.camera.cropping.allow.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"settings.allowCameraEditing\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>-->\r\n\r\n        <div class=\"item flex-item\">\r\n          <span class=\"flex-start\" translate=\"app.settings.camera.photo.size.label\"></span>\r\n          <popover-select\r\n            class=\"flex-end\"\r\n            options=\"res.value as res.label for res in cameraResolutions\"\r\n            ng-model=\"settings.cameraResolution\">\r\n          </popover-select>\r\n        </div>\r\n\r\n        <div class=\"item range\">\r\n          <span translate=\"app.settings.camera.photo.quality.label\"></span>\r\n          <span>&nbsp;&nbsp;</span>\r\n          <input type=\"range\" name=\"imageQuality\" min=\"15\" max=\"100\" value=\"{{settings.jpgQuality}}\"\r\n                 ng-model=\"settings.jpgQuality\">\r\n          <span>{{settings.jpgQuality}}%</span>\r\n        </div>\r\n\r\n        <div class=\"item item-toggle\" ng-if=\"::showOrientationMode\">\r\n          <span translate=\"app.settings.camera.orientation.fix.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"settings.correctOrientation\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>\r\n\r\n        <!--<div class=\"item flex-item\">\r\n          <span class=\"flex-start\" translate=\"app.settings.camera.video.quality.label\"></span>\r\n          <popover-select\r\n            class=\"flex-end\"\r\n            options=\"res.value as res.label for res in vidQualities\"\r\n            ng-model=\"settings.vidQuality\">\r\n          </popover-select>\r\n        </div>-->\r\n\r\n        <div class=\"item item-toggle\">\r\n          <span translate=\"app.settings.camera.copy.gallery.label\"></span>\r\n          <label class=\"toggle toggle-balanced\">\r\n            <input type=\"checkbox\" ng-model=\"settings.copyToGallery\">\r\n            <div class=\"track\">\r\n              <div class=\"handle\"></div>\r\n            </div>\r\n          </label>\r\n        </div>\r\n      </div>\r\n\r\n\r\n<!--      <div-->\r\n<!--        class=\"item item-divider view-divider extra-divider\"-->\r\n<!--        translate=\"app.settings.audio.n10ns.heading.label\"-->\r\n<!--      >-->\r\n<!--      </div>-->\r\n<!--      <div class=\"list\">-->\r\n\r\n<!--        <div class=\"item item-toggle\">-->\r\n<!--          <span translate=\"app.settings.audio.n10ns.enable.label\"></span>-->\r\n<!--          <label class=\"toggle toggle-balanced\">-->\r\n<!--            <input type=\"checkbox\" ng-model=\"settings.useAudioN10ns\" ng-change=\"updatePush(settings.useAudioN10ns)\">-->\r\n<!--            <div class=\"track\">-->\r\n<!--              <div class=\"handle\"></div>-->\r\n<!--            </div>-->\r\n<!--          </label>-->\r\n<!--        </div>-->\r\n\r\n<!--        <div class=\"item range\">-->\r\n<!--          <span translate=\"app.settings.audio.n10ns.volume.label\"></span>-->\r\n<!--          <span>&nbsp;&nbsp;</span>-->\r\n<!--          <input type=\"range\" name=\"n10nVolume\" min=\"0\" max=\"100\" value=\"{{settings.audioN10nVolume}}\"-->\r\n<!--                 ng-model=\"settings.audioN10nVolume\">-->\r\n<!--          <span>{{settings.audioN10nVolume}}%</span>-->\r\n<!--        </div>-->\r\n<!--      </div>-->\r\n\r\n\r\n      <div\r\n        class=\"item item-divider view-divider\"\r\n        translate=\"app.settings.auth.header.label\"\r\n        ng-hide=\"isSocial\">\r\n      </div>\r\n      <button\r\n        class=\"button logout-button\"\r\n        ng-show=\"showPasswordButton()\"\r\n        translate=\"app.settings.auth.password.submit.label\"\r\n        ng-click=\"changePassword()\">\r\n      </button>\r\n      <div\r\n        class=\"button logout-button\"\r\n        ng-show=\"resetPasswordMode === ButtonState.WORKING\">\r\n        <!-- TODO(i18n): convert to message code if this state uses words -->\r\n        Sending password change email...\r\n      </div>\r\n      <div\r\n        class=\"button logout-button\"\r\n        ng-show=\"resetPasswordMode === ButtonState.SUCCESS\">\r\n        <!-- TODO(i18n): convert to message code if this state uses words -->\r\n        We've emailed you a link to update your password!\r\n      </div>\r\n      <div\r\n        class=\"button logout-button\"\r\n        ng-show=\"resetPasswordMode === ButtonState.ERROR\">\r\n        <!-- TODO(i18n): convert to message code if this state uses words -->\r\n        Uh oh, something went wrong.\r\n        Please try again shortly.\r\n        If the problem continues, please contact us so we can help you.\r\n      </div>\r\n\r\n      <div class=\"spacer\" style=\"height: 20px;\"></div>\r\n      <div class=\"item item-divider view-divider\" translate=\"app.settings.about\"></div>\r\n      <div class=\"item\">{{'app.settings.version' | translate}}: {{::CLIENT_VERSION}}</div>\r\n      <div class=\"spacer\" style=\"height: 20px;\"></div>\r\n\r\n\r\n      <!-- EXPERIMENTAL -->\r\n      <div class=\"item item-divider view-divider\" ng-show=\"displayUploadsSection\"\r\n           ng-if=\"::ENVIRONMENT === ENVIRONMENTS.DEVELOP\">App Updates\r\n      </div>\r\n      <ion-list ng-show=\"displayUploadsSection\" ng-if=\"::ENVIRONMENT === ENVIRONMENTS.DEVELOP\">\r\n        <div class=\"item\" ng-show=\"updateMessage\">{{updateMessage}}</div>\r\n\r\n        <div class=\"item-uploading-container\" ng-show=\"updating\">\r\n          <div class=\"uploading-container\" ng-show=\"uploading\">\r\n            <div class=\"uploading\" style=\"width: {{uploadProgress}}%\"></div>\r\n          </div>\r\n        </div>\r\n      </ion-list>\r\n      <button class=\"button logout-button\" ng-show=\"hasUpdate\" ng-click=\"update()\"\r\n              ng-if=\"::ENVIRONMENT === ENVIRONMENTS.DEVELOP\">Update Now\r\n      </button>\r\n\r\n      <button class=\"button logout-button scroll-padding-bottom\" ng-click=\"logout()\"\r\n              translate=\"app.settings.auth.logout.label\"></button>\r\n    </ion-scroll>\r\n  </ion-content>\r\n</ion-view>\r\n";
 
 /***/ }),
 /* 2997 */
@@ -495966,10 +495981,6 @@ var _forEach = __webpack_require__(142);
 
 var _forEach2 = _interopRequireDefault(_forEach);
 
-var _isString = __webpack_require__(16);
-
-var _isString2 = _interopRequireDefault(_isString);
-
 var _moment = __webpack_require__(5);
 
 var _moment2 = _interopRequireDefault(_moment);
@@ -495990,7 +496001,7 @@ var angular = __webpack_require__(4);
 var extend = angular.extend;
 
 
-ProjectExportController.$inject = ['$modal', '$scope', 'papaParse', '$download', '$toast', '$ngRedux', 'AuthService', 'ProjectImportExportService', 'NotificationService', 'FirebaseQueueService', 'project', 'projectName', 'assetLevel', 'type', 'ROOT_API_COLLECTION', 'ROOT_API_SPEC', 'TOAST_TYPES'];
+ProjectExportController.$inject = ['$modal', '$scope', 'papaParse', '$download', '$toast', '$ngRedux', 'AuthService', 'ProjectImportExportService', 'NotificationService', 'fetchUtils', 'project', 'projectName', 'assetLevel', 'type', 'TOAST_TYPES'];
 
 CacheTemplates.$inject = ['$templateCache'];
 
@@ -495999,7 +496010,7 @@ function CacheTemplates($templateCache) {
 }
 
 // TODO: add support for toggling individual headers. Such a method will need to automatically include/exclude required/dependent headers
-function ProjectExportController($modal, $scope, papaParse, $download, $toast, $ngRedux, AuthService, ProjectImportExportService, NotificationService, FirebaseQueueService, project, projectName, assetLevel, type, ROOT_API_COLLECTION, ROOT_API_SPEC, TOAST_TYPES) {
+function ProjectExportController($modal, $scope, papaParse, $download, $toast, $ngRedux, AuthService, ProjectImportExportService, NotificationService, fetchUtils, project, projectName, assetLevel, type, TOAST_TYPES) {
   var vm = $scope.projectExport = this;
   projectName += '.csv';
 
@@ -496040,19 +496051,19 @@ function ProjectExportController($modal, $scope, papaParse, $download, $toast, $
       }
     }
 
-    // TODO(migration): convert to plain object instead of JSON (new protocol automatically uses JSON)
+    var body = { headers: headers };
+    if (type) body.type = type;
     var request = {
-      method: assetLevel ? 'asset-projects/export' : 'projects/export',
-      project: project,
-      headers: JSON.stringify(headers)
+      method: 'POST',
+      mode: 'cors',
+      cache: 'default',
+      contentType: 'json',
+      body: body
     };
 
-    if (type) {
-      request.type = type;
-    }
-
-    // eslint-disable-next-line max-len
-    var requestPromise = FirebaseQueueService.addTask(request, AuthService.getUserId(), ROOT_API_COLLECTION, ROOT_API_SPEC);
+    var collection = assetLevel ? 'asset-projects' : 'projects';
+    var url = fetchUtils.API_URL + '/api/' + collection + '/' + project + '/_export';
+    var requestPromise = fetchUtils.rawRequestWithAuth(url, request);
 
     var state = $ngRedux.getState().model;
     var projectName = assetLevel && state.asset ? state.project.name + ' | ' + state.asset.name : state.project.name;
@@ -496071,24 +496082,29 @@ function ProjectExportController($modal, $scope, papaParse, $download, $toast, $
 
   function _createOnSuccess(headers) {
     return function _onSuccess(response) {
-      var jsonData = void 0;
       // prompt download of csv file containing data
       // logger.log('success!', response);
 
-      if (response && (0, _isString2.default)(response.data)) {
-        try {
-          jsonData = JSON.parse(response.data);
+      try {
+        var body = response.data;
+        if (body.rows) {
+          if (body.rows.length > 0) {
+            var csvData = papaParse.unparse(_formatData(forceHeaders(headers, body.rows)));
+            // logger.log('csv to export', csvData);
 
-          var csvData = papaParse.unparse(_formatData(forceHeaders(headers, jsonData)));
-          // logger.log('csv to export', csvData);
-
-          $download.downloadAsTextFile(csvData, projectName);
-        } catch (err) {
-          _logger.logger.error({ err: err }, 'Failed to unparse data or trigger download');
+            $download.downloadAsTextFile(csvData, projectName);
+          } else {
+            return $toast.showI18nMessage({
+              messageId: 'project.export.no.data.message',
+              type: $toast.TOAST_TYPES.info
+            });
+          }
         }
+      } catch (e) {
+        _onError(e);
+      } finally {
+        $modal.hide();
       }
-
-      return $modal.hide();
     };
   }
 
@@ -496170,6 +496186,9 @@ module.exports = "<ion-modal-view class=\"transparent-modal\">\r\n  <ion-content
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 exports.CacheTemplates = CacheTemplates;
 exports.ProjectImportController = ProjectImportController;
 
@@ -496192,7 +496211,7 @@ var fromJson = angular.fromJson,
     toJson = angular.toJson;
 
 
-ProjectImportController.$inject = ['$modal', '$scope', '$miscUtils', 'papaParse', '$toast', '$ngRedux', '$download', '$help', 'AuthService', 'CsvImportService', 'ProjectImportExportService', 'NotificationService', 'FirebaseQueueService', 'project', 'assetLevel', 'type', 'ROOT_API_COLLECTION', 'ROOT_API_SPEC', 'TOAST_TYPES'];
+ProjectImportController.$inject = ['$modal', '$scope', '$miscUtils', 'papaParse', '$toast', '$ngRedux', '$download', '$help', 'AuthService', 'CsvImportService', 'ProjectImportExportService', 'NotificationService', 'FirebaseQueueService', 'fetchUtils', 'project', 'assetLevel', 'type'];
 
 CacheTemplates.$inject = ['$templateCache'];
 
@@ -496206,7 +496225,7 @@ var inviteCsvInstructions = "During import, Milestones, Tasks, and Requirements 
 
 /* eslint-enable max-len */
 
-function ProjectImportController($modal, $scope, $miscUtils, papaParse, $toast, $ngRedux, $download, $help, AuthService, csvImportService, ProjectImportExportService, NotificationService, FirebaseQueueService, project, assetLevel, type, ROOT_API_COLLECTION, ROOT_API_SPEC, TOAST_TYPES) {
+function ProjectImportController($modal, $scope, $miscUtils, papaParse, $toast, $ngRedux, $download, $help, AuthService, csvImportService, ProjectImportExportService, NotificationService, FirebaseQueueService, fetchUtils, project, assetLevel, type) {
 
   var vm = $scope.projectImport = this;
   vm.data = null;
@@ -496240,19 +496259,20 @@ function ProjectImportController($modal, $scope, $miscUtils, papaParse, $toast, 
     } else {
       var _audio, _toasts;
 
-      // TODO(migration)
+      var body = { rows: vm.data };
+      if (type) body.type = type;
+      if (vm.templateOptions) body.templateOptions = vm.templateOptions;
       var request = {
-        method: assetLevel ? 'asset-projects/import' : 'projects/import',
-        project: project,
-        data: toJson(vm.data) // convert the array to json
+        method: 'POST',
+        mode: 'cors',
+        cache: 'default',
+        contentType: 'json',
+        body: body
       };
 
-      if (type) request.type = type;
-
-      if (vm.templateOptions) request.templateOptions = vm.templateOptions;
-
-      // eslint-disable-next-line max-len
-      var requestPromise = FirebaseQueueService.addTask(request, AuthService.getUserId(), ROOT_API_COLLECTION, ROOT_API_SPEC);
+      var collection = assetLevel ? 'asset-projects' : 'projects';
+      var url = fetchUtils.API_URL + '/api/' + collection + '/' + project + '/_import';
+      var requestPromise = fetchUtils.rawRequestWithAuth(url, request);
 
       var state = $ngRedux.getState().model;
       var projectName = assetLevel && state.asset ? state.project.name + ' | ' + state.asset.name : state.project.name;
@@ -496270,13 +496290,19 @@ function ProjectImportController($modal, $scope, $miscUtils, papaParse, $toast, 
         toasts: (_toasts = {}, _defineProperty(_toasts, _NoteState.NoteState.COMPLETE, true), _defineProperty(_toasts, _NoteState.NoteState.ERROR, true), _toasts)
       });
 
-      return requestPromise.then(_onSuccess, _onError);
+      return requestPromise.then(_onSuccess, function () {
+        return _onError({ errors: ['Network connection error. Please try again later.'] });
+      });
     }
   }
 
-  function _onSuccess() {
-    // logger.log('success!');
-    return $modal.hide();
+  function _onSuccess(response) {
+    if (response.ok) {
+      // logger.log('success!');
+      return $modal.hide();
+    } else {
+      return _onError(_typeof(response.data) === 'object' ? response.data || {} : {});
+    }
   }
 
   function _onError(error) {
@@ -496829,15 +496855,14 @@ function ProjectAssetMapClusterFactory($ngRedux, ProjectDomain, AssetDomain) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 exports.ProjectImportExportService = ProjectImportExportService;
 
 var _pickBy = __webpack_require__(498);
 
 var _pickBy2 = _interopRequireDefault(_pickBy);
-
-var _isString = __webpack_require__(16);
-
-var _isString2 = _interopRequireDefault(_isString);
 
 var _ReduxUtils = __webpack_require__(6);
 
@@ -496849,11 +496874,512 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-ProjectImportExportService.$inject = ['$ngRedux', '$popup', '$download', '$toast', '$locale', '$translate', 'AuthService', 'NotificationService', 'FirebaseQueueService', 'ROOT_API_COLLECTION', 'ROOT_API_SPEC'];
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function ProjectImportExportService($ngRedux, $popup, $download, $toast, $locale, $translate, AuthService, NotificationService, FirebaseQueueService, ROOT_API_COLLECTION, ROOT_API_SPEC) {
+ProjectImportExportService.$inject = ['$ngRedux', '$popup', '$download', '$toast', '$locale', '$translate', 'AuthService', 'NotificationService', 'fetchUtils', 'papaParse'];
+
+function ProjectImportExportService($ngRedux, $popup, $download, $toast, $locale, $translate, AuthService, NotificationService, fetchUtils, papaParse) {
   this.openProjectAssetsExport = openProjectAssetsExport;
   this.exportProjectAssets = exportProjectAssets;
+
+  /**
+   * Creates a modal dialog with a message and a progress bar.
+   * @param {string} message - The message to display above the progress bar.
+   * @returns {{
+   *   abortSignal: AbortSignal,
+   *   update: (progress: number, complete: boolean) => void,
+   *   close: () => void
+   * }}
+   */
+  function createProgressDialog(message) {
+    var abortCtrl = new AbortController();
+
+    // Create overlay
+    var overlay = document.createElement('div');
+    Object.assign(overlay.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: '9999'
+    });
+
+    // Create dialog box
+    var dialog = document.createElement('div');
+    Object.assign(dialog.style, {
+      backgroundColor: '#fff',
+      padding: '20px',
+      borderRadius: '8px',
+      width: '300px',
+      boxSizing: 'border-box',
+      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+      textAlign: 'center'
+    });
+
+    // Create message element
+    var msgEl = document.createElement('div');
+    msgEl.textContent = message;
+    Object.assign(msgEl.style, {
+      marginBottom: '12px',
+      fontSize: '16px',
+      color: '#333'
+    });
+
+    // Create progress bar container
+    var progressContainer = document.createElement('div');
+    Object.assign(progressContainer.style, {
+      width: '100%',
+      height: '20px',
+      backgroundColor: '#e0e0e0',
+      borderRadius: '10px',
+      overflow: 'hidden',
+      marginBottom: '12px'
+    });
+
+    // Create progress bar itself
+    var progressBar = document.createElement('div');
+    Object.assign(progressBar.style, {
+      width: '0%',
+      height: '100%',
+      backgroundColor: '#007bff',
+      transition: 'width 0.2s ease'
+    });
+
+    // Create Cancel button
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    Object.assign(cancelBtn.style, {
+      marginTop: '8px',
+      padding: '6px 12px',
+      fontSize: '14px',
+      cursor: 'pointer',
+      border: 'none',
+      borderRadius: '4px',
+      backgroundColor: '#dc3545',
+      color: '#fff'
+    });
+    cancelBtn.addEventListener('click', function () {
+      abortCtrl.abort();
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    });
+
+    // Assemble elements
+    progressContainer.appendChild(progressBar);
+    dialog.appendChild(msgEl);
+    dialog.appendChild(progressContainer);
+    dialog.appendChild(cancelBtn);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    return {
+      abortSignal: abortCtrl.signal,
+
+      /**
+       * Update the progress bar.
+       * @param {number} progress - A number from 0 to 100 indicating percentage.
+       * @param {boolean} complete - If true, the bar turns green.
+       */
+      update: function update(progress, complete) {
+        var pct = Math.max(0, Math.min(100, progress));
+        progressBar.style.width = pct + '%';
+        if (complete) {
+          progressBar.style.backgroundColor = 'green';
+        } else {
+          progressBar.style.backgroundColor = '#007bff';
+        }
+      },
+
+      /**
+       * Close and remove the dialog from the DOM.
+       */
+      close: function close() {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }
+    };
+  }
+
+  var Report = function () {
+    function Report(token, projectId, projectName) {
+      _classCallCheck(this, Report);
+
+      this.token = token;
+      this.projectId = projectId;
+      this.projectName = projectName;
+      this.fileName = projectName + '_Assets_Snapshot.csv';
+    }
+
+    _createClass(Report, [{
+      key: 'init',
+      value: function init() {
+        var _this = this;
+
+        return this.getTemplateTasks().then(function (templateTasks) {
+          _this.templateTasks = templateTasks;
+
+          _this.headers = {
+            assets: _this.getAssetHeaders(),
+            tasks: _this.getTaskHeaders(_this.templateTasks)
+          };
+          _this.headerRow = _this.buildExportAssetHeaderRow(_this.headers);
+          _this.assetRows = new Map();
+
+          if (_this.templateTasks.length === 0) {
+            $toast.showMessage('Project template is empty.', null, $toast.TOAST_TYPES.info);
+            return false;
+          }
+          return true;
+        });
+      }
+
+      /**
+       * Fetch one page with exponential backoff.
+       * Returns:
+       *  - "HARD_FAIL" if a 4xx error occurs
+       *  - Response object on success
+       *  - null if after 5 attempts still no valid response
+       *  - rejects with AbortError if aborted
+       */
+
+    }, {
+      key: 'fetchWithRetry',
+      value: function fetchWithRetry(params, controller) {
+        var _this2 = this;
+
+        var attemptFetch = function attemptFetch(attempt) {
+          return fetch(fetchUtils.API_URL + '/api/next/projects/' + _this2.projectId + '/assets/_export?' + params.toString(), {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer ' + _this2.token
+            },
+            signal: controller.abortSignal
+          }).then(function (res) {
+            if (res.status >= 400 && res.status < 500) {
+              // Hard fail
+              return 'HARD_FAIL';
+            }
+            if (res.status === 200 || res.status === 204) {
+              return res;
+            }
+            if (attempt < 5) {
+              var delay = Math.pow(2, attempt - 1) * 500;
+              return new Promise(function (resolve) {
+                return setTimeout(resolve, delay);
+              }).then(function () {
+                return attemptFetch(attempt + 1);
+              });
+            }
+            return res; // whatever final status
+          }).catch(function (err) {
+            if (err.name === 'AbortError') return Promise.reject(err);
+            if (attempt < 5) {
+              var delay2 = Math.pow(2, attempt - 1) * 500;
+              return new Promise(function (resolve) {
+                return setTimeout(resolve, delay2);
+              }).then(function () {
+                return attemptFetch(attempt + 1);
+              });
+            }
+            return null;
+          });
+        };
+        return attemptFetch(1);
+      }
+
+      /**
+       * Returns a status string:
+       *   "CANCELLED" if user aborted,
+       *   "EMPTY" if no rows to export,
+       *   "SUCCESS" if CSV downloaded,
+       *   "ERROR" on unexpected failure.
+       */
+
+    }, {
+      key: 'getReport',
+      value: function getReport(controller) {
+        var _this3 = this;
+
+        var next = null;
+        var total = 0;
+        var loaded = 0;
+
+        var processPage = function processPage() {
+          var params = new URLSearchParams({
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            dateFormat: $locale.DATETIME_FORMATS.shortDate,
+            pageSize: '500',
+            chat: 'true'
+          });
+          if (next) {
+            params.set('afterAp', next.ap);
+            params.set('after', next.id);
+          }
+
+          return _this3.fetchWithRetry(params, controller).then(function (res) {
+            if (res === 'HARD_FAIL') {
+              $toast.showMessage('Request failed. Please check your access and try again.', null, $toast.TOAST_TYPES.error);
+              return 'ERROR';
+            }
+            if (!res || res.status !== 200 && res.status !== 204) {
+              $toast.showMessage('Failed to fetch page after multiple attempts. Report is not complete.', null, $toast.TOAST_TYPES.error);
+              return 'ERROR';
+            }
+            if (res.status === 204) {
+              return 'DONE';
+            }
+            return res.json().then(function (json) {
+              if (!json || !json.list || json.list.length === 0) {
+                return 'DONE';
+              }
+              _this3.addTasksToRows(json.list);
+              total = json.total;
+              loaded += json.list.length;
+              if (total) {
+                controller.update(loaded / total * 100, false);
+              }
+              next = json.next;
+              if (!next || !next.id || !next.ap) {
+                return 'DONE';
+              }
+              return processPage();
+            }).catch(function () {
+              $toast.showMessage('Failed to parse response. Report is incomplete.', null, $toast.TOAST_TYPES.error);
+              return 'DONE';
+            });
+          }).catch(function (err) {
+            if (err.name === 'AbortError') {
+              return 'CANCELLED';
+            }
+            console.error(err);
+            $toast.showMessage('An unexpected error occurred during report generation.', null, $toast.TOAST_TYPES.error);
+            return 'ERROR';
+          });
+        };
+
+        return new Promise(function (resolve) {
+          processPage().then(function (status) {
+            if (status === 'CANCELLED' || status === 'ERROR') {
+              resolve(status);
+              return;
+            }
+            // status is 'DONE'
+            controller.update(100, true);
+            if (_this3.assetRows.size === 0) {
+              resolve('EMPTY');
+              return;
+            }
+            var rows = Array.from(_this3.assetRows.values()).sort(function (a, b) {
+              var aKey = (a[1] || a[0] || '').toString();
+              var bKey = (b[1] || b[0] || '').toString();
+              return aKey.localeCompare(bKey);
+            });
+            rows.unshift(_this3.headerRow);
+            var csv = papaParse.unparse(rows);
+            $download.downloadAsTextFile(csv, _this3.fileName);
+            resolve('SUCCESS');
+          });
+        });
+      }
+    }, {
+      key: 'getName',
+      value: function getName() {
+        var _this4 = this;
+
+        return fetch(fetchUtils.API_URL + '/api/projects/' + this.projectId, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + this.token
+          }
+        }).then(function (res) {
+          if (res.status === 200) {
+            return res.json().then(function (body) {
+              if (body && body.item && body.item.name) {
+                return body.item.name + '_Assets_Snapshot.csv';
+              }
+              return _this4.projectId + '_Assets_Snapshot.csv';
+            });
+          }
+          return _this4.projectId + '_Assets_Snapshot.csv';
+        }).catch(function () {
+          return _this4.projectId + '_Assets_Snapshot.csv';
+        });
+      }
+    }, {
+      key: 'getTemplateTasks',
+      value: function getTemplateTasks() {
+        return fetch(fetchUtils.API_URL + '/api/projects/' + this.projectId + '/template-tasks?pageSize=5000', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + this.token
+          }
+        }).then(function (res) {
+          if (res.status === 200) {
+            return res.json().then(function (body) {
+              if (!body) return [];
+              var list = body.list || [];
+              return list.filter(function (item) {
+                return item.collection === 'tasks';
+              });
+            });
+          } else if (res.status === 204) {
+            return [];
+          } else {
+            return Promise.reject(new Error('Failed to get template tasks.'));
+          }
+        });
+      }
+    }, {
+      key: 'getAssetHeaders',
+      value: function getAssetHeaders() {
+        var headers = new Map();
+        var idx = 0;
+        Report.assetHeadersList.forEach(function (value) {
+          headers.set(value, { column: idx++, name: value });
+        });
+        return headers;
+      }
+    }, {
+      key: 'getTaskHeaders',
+      value: function getTaskHeaders(templateTasks) {
+        var _this5 = this;
+
+        var headers = new Map();
+        var startingColumn = Report.assetHeadersList.length;
+        templateTasks.forEach(function (tData) {
+          var name = tData.name;
+          headers.set(tData.id, {
+            EC: { column: startingColumn++, name: _this5.taskNameAsHeader(name, 'EC') },
+            AC: { column: startingColumn++, name: _this5.taskNameAsHeader(name, 'AC') },
+            AP: { column: startingColumn++, name: _this5.taskNameAsHeader(name, 'AP') },
+            NA: { column: startingColumn++, name: _this5.taskNameAsHeader(name, 'NA') },
+            ST: { column: startingColumn++, name: _this5.taskNameAsHeader(name, 'ST') },
+            AS: { column: startingColumn++, name: _this5.taskNameAsHeader(name, 'AS') }
+          });
+        });
+        return headers;
+      }
+    }, {
+      key: 'taskNameAsHeader',
+      value: function taskNameAsHeader(name, type) {
+        return 'Task_' + name.replace(/ /g, '_') + '_' + type;
+      }
+    }, {
+      key: 'buildExportAssetHeaderRow',
+      value: function buildExportAssetHeaderRow(headers) {
+        var headerList = [];
+        headers.assets.forEach(function (header) {
+          return headerList.push(header);
+        });
+        headers.tasks.forEach(function (taskHeaders) {
+          return Object.values(taskHeaders).forEach(function (header) {
+            return headerList.push(header);
+          });
+        });
+        var headerRow = new Array(headerList.length);
+        headerList.forEach(function (h) {
+          headerRow[h.column] = h.name;
+        });
+        return headerRow;
+      }
+    }, {
+      key: 'addTasksToRows',
+      value: function addTasksToRows(tasks) {
+        var _this6 = this;
+
+        tasks.forEach(function (task) {
+          var assetId = task.Asset_DID;
+          var assetTaskId = task.Task_DID;
+          if (!assetId || !assetTaskId) return;
+          var taskId = assetTaskId.replaceAll(assetId, '');
+          var header = _this6.headers.tasks.get(taskId);
+
+          if (header) {
+            var row = _this6.upsertAssetRow(task);
+            row[header.EC.column] = task.Task_Scheduled || null;
+            row[header.AC.column] = task.Task_Submitted_On || null;
+            row[header.AP.column] = task.Task_Approved_On || null;
+            row[header.NA.column] = task.Task_Cancelled_On || null;
+            row[header.ST.column] = task.Task_Status || null;
+            row[header.AS.column] = task.Task_Assigned_To_Name || null;
+          }
+        });
+      }
+    }, {
+      key: 'upsertAssetRow',
+      value: function upsertAssetRow(task) {
+        var row = this.assetRows.get(task.Asset_DID);
+        if (!row) {
+          if (!task.Asset_DID || !task.Asset_Name && !task.Asset_ID) {
+            console.log(task);
+          }
+          row = new Array(this.headerRow.length).fill(null);
+
+          row[0] = task.Asset_ID || null;
+          row[1] = task.Asset_Name || null;
+          row[2] = task.Asset_Address || null;
+          row[3] = task.Project_Status || null;
+          row[4] = task.Asset_Latest_Message || null;
+          row[5] = task.Asset_Latest_Message_Date || null;
+          row[6] = task.Total_Requirement_Count || null;
+
+          this.assetRows.set(task.Asset_DID, row);
+        }
+        return row;
+      }
+    }]);
+
+    return Report;
+  }();
+
+  Report.assetHeadersList = ['Asset_ID', 'Asset_Name', 'Asset_Address', 'Asset_Status', 'Asset_Latest_Message', 'Asset_Latest_Message_Date', 'Total_Requirement_Count'];
+
+
+  function buildPaginatedExport(targetData) {
+    var token = $ngRedux.getState().auth.data.apiToken;
+
+    var t0 = Date.now();
+    var report = new Report(token, targetData.id, targetData.name);
+
+    return report.init().catch(function () {
+      $toast.showMessage('An unexpected error occurred. Please try again.', null, $toast.TOAST_TYPES.error);
+      return false;
+    }).then(function (hasReport) {
+      if (!hasReport) return;
+
+      var controller = createProgressDialog('Downloading ' + report.fileName);
+      report.getReport(controller).catch(function (err) {
+        return err.name === 'AbortError' ? 'CANCELLED' : 'ERROR';
+      }).then(function (status) {
+        var t1 = Date.now();
+        switch (status) {
+          case 'CANCELLED':
+            console.log('Cancelled after ' + (t1 - t0) / 1000 + 's');
+            $toast.showMessage('Report has been cancelled.', null, $toast.TOAST_TYPES.info);
+            break;
+          case 'EMPTY':
+            console.log('Empty report after ' + (t1 - t0) / 1000 + 's');
+            $toast.showMessage('Report is empty.', null, $toast.TOAST_TYPES.info);
+            break;
+          case 'SUCCESS':
+            console.log('Completed after ' + (t1 - t0) / 1000 + 's');
+            break;
+          default:
+            console.log('Failed after ' + (t1 - t0) / 1000 + 's');
+            // In getReport we already showed a toast for errors
+            break;
+        }
+      }).finally(function () {
+        return controller.close();
+      });
+    });
+  }
 
   var HEADERS = this.HEADERS = {
     milestone_name: { type: 'string' },
@@ -496926,18 +497452,23 @@ function ProjectImportExportService($ngRedux, $popup, $download, $toast, $locale
   function exportProjectAssets(targetData) {
     var _audio;
 
-    // TODO(migration)
     var request = {
-      method: 'projects/assets/export',
-      data: JSON.stringify({
-        projectId: targetData.id,
-        timezoneOffset: -new Date().getTimezoneOffset(), /* check if this is backwards */
-        dateFormat: $locale.DATETIME_FORMATS.shortDate
-      })
+      method: 'GET',
+      mode: 'cors',
+      cache: 'default'
     };
 
-    // eslint-disable-next-line max-len
-    var requestPromise = FirebaseQueueService.addTask(request, AuthService.getUserId(), ROOT_API_COLLECTION, ROOT_API_SPEC);
+    var params = new URLSearchParams({
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      dateFormat: $locale.DATETIME_FORMATS.shortDate
+    });
+
+    var requestPromise = buildPaginatedExport(targetData);
+
+    /*
+    const url = `${fetchUtils.API_URL}/api/next/projects/${targetData.id}/assets/_export?${params.toString()}`;
+    const requestPromise = fetchUtils.rawRequestWithAuth(url, request);
+    */
 
     // TODO(i18n)
     NotificationService.addNotification({
@@ -496948,27 +497479,31 @@ function ProjectImportExportService($ngRedux, $popup, $download, $toast, $locale
       toasts: _defineProperty({}, _NoteState.NoteState.ERROR, true)
     });
 
-    return requestPromise.then(_generateOnExportProjectAssetsSuccess(targetData.name), _onExportProjectAssetsError);
+    return requestPromise; //.then(_generateOnExportProjectAssetsSuccess(targetData.name), _onExportProjectAssetsError);
   }
 
   function _generateOnExportProjectAssetsSuccess(projectName) {
+    /**
+     * @param {Response} response
+     */
     return function _onSuccess(response) {
 
       // prompt download of csv file containing data
       // console.log('success!', response);
 
-      if (response) {
-        if (response.statusCode === 204) {
-          return $toast.showI18nMessage({ messageId: response.messageId, type: $toast.TOAST_TYPES.info });
-        } else if (response.statusCode === 200) {
-          if ((0, _isString2.default)(response.file)) {
-            try {
-              var downloadName = projectName.replace(/ /g, '_') + '_Assets_Snapshot.csv';
-              return $download.downloadAsTextFile(response.file, downloadName);
-            } catch (e) {}
+      if (response.status === 204) {
+        return $toast.showI18nMessage({ messageId: response.messageId, type: $toast.TOAST_TYPES.info });
+      } else if (response.status === 200) {
+        var body = response.data;
+        try {
+          if (typeof body.file === 'string') {
+            var downloadName = projectName.replace(/ /g, '_') + '_Assets_Snapshot.csv';
+            return $download.downloadAsTextFile(body.file, downloadName);
           } else {
-            return $toast.showI18nMessage({ messageId: response.messageId, type: $toast.TOAST_TYPES.info });
+            return $toast.showI18nMessage({ messageId: body.messageId, type: $toast.TOAST_TYPES.info });
           }
+        } catch (e) {
+          return _onExportProjectAssetsError(e);
         }
       }
 

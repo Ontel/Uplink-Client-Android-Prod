@@ -33,7 +33,7 @@ buildscript {
     // http://tools.android.com/tech-docs/new-build-system/version-compatibility
     // and https://issues.apache.org/jira/browse/CB-8143
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:8.11.0'
     }
 }
 
@@ -54,7 +54,7 @@ allprojects {
 }
 
 wrapper {
-    gradleVersion = '7.6.4'
+    gradleVersion = '8.13.0'
 }
 
 // Configuration propertiindex.jses. Set these via environment variables, build-extras.gradle, or gradle.properties.
@@ -63,7 +63,7 @@ ext {
     apply from: 'CordovaLib/cordova.gradle'
     // The value for android.compileSdkVersion.
     if (!project.hasProperty('cdvCompileSdkVersion')) {
-        cdvCompileSdkVersion = 34
+        cdvCompileSdkVersion = 35
     }
     // The value for android.buildToolsVersion.
     if (!project.hasProperty('cdvBuildToolsVersion')) {
@@ -71,7 +71,7 @@ ext {
     }
     // Sets the versionCode to the given value.
     if (!project.hasProperty('cdvVersionCode')) {
-        cdvVersionCode = 13592
+        cdvVersionCode = 13595
     }
     // Sets the minSdkVersion to the given value.
     if (!project.hasProperty('cdvMinSdkVersion')) {
@@ -165,6 +165,8 @@ task cdvPrintProps {
 }
 
 android {
+    namespace 'io.swiftworks.projects'
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -178,29 +180,37 @@ android {
         }
     }
 
-    packagingOptions {
-        exclude 'META-INF/proguard/androidx-annotations.pro'
-    }
 
     defaultConfig {
         versionCode cdvVersionCode ?: new BigInteger("" + privateHelpers.extractIntFromManifest("versionCode"))
         applicationId privateHelpers.extractStringFromManifest("package")
         minSdkVersion 24
-        compileSdk 34
-        buildToolsVersion '34.0.0'
-        targetSdk 34
+        compileSdk 35
+        buildToolsVersion '35.0.0'
+        targetSdk 35
 
         if (cdvMinSdkVersion != null) {
             minSdkVersion cdvMinSdkVersion
         }
     }
-
-    lintOptions {
-      abortOnError false;
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/proguard/androidx-annotations.pro']
+        }
     }
 
-    buildToolsVersion '34.0.0'
-    compileSdk 34
+
+    buildToolsVersion '35.0.0'
+    ndkVersion '28.2.13676358'
+    compileSdk 35
+    buildFeatures {
+        renderScript true
+        aidl true
+        buildConfig true
+    }
+    lint {
+        abortOnError false
+    }
 
     if (Boolean.valueOf(cdvBuildMultipleApks)) {
         productFlavors {

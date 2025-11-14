@@ -18,13 +18,13 @@ cordova.define("cordova-plugin-media-capture.CaptureError", function(require, ex
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
 /**
  * The CaptureError interface encapsulates all errors in the Capture API.
  */
-var CaptureError = function(c) {
-   this.code = c || null;
+const CaptureError = function (c) {
+    this.code = c || null;
 };
 
 // Camera or microphone failed to capture image or sound.

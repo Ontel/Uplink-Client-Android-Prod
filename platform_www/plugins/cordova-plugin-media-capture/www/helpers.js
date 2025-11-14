@@ -18,29 +18,29 @@ cordova.define("cordova-plugin-media-capture.helpers", function(require, exports
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
-var MediaFile = require('./MediaFile');
+const MediaFile = require('./MediaFile');
 
-function wrapMediaFiles(pluginResult) {
-    var mediaFiles = [];
-    var i;
+function wrapMediaFiles (pluginResult) {
+    const mediaFiles = [];
+    let i;
     for (i = 0; i < pluginResult.length; i++) {
-        var mediaFile = new MediaFile();
-        mediaFile.name = pluginResult[i].name;
-
-        // Backwards compatibility
-        mediaFile.localURL = pluginResult[i].localURL || pluginResult[i].fullPath;
+        const mediaFile = new MediaFile(
+            pluginResult[i].name,
+            // Backwards compatibility
+            pluginResult[i].localURL || pluginResult[i].fullPath,
+            pluginResult[i].type,
+            pluginResult[i].lastModifiedDate,
+            pluginResult[i].size
+        );
         mediaFile.fullPath = pluginResult[i].fullPath;
-        mediaFile.type = pluginResult[i].type;
-        mediaFile.lastModifiedDate = pluginResult[i].lastModifiedDate;
-        mediaFile.size = pluginResult[i].size;
         mediaFiles.push(mediaFile);
     }
     return mediaFiles;
 }
 
 module.exports = {
-    wrapMediaFiles: wrapMediaFiles
+    wrapMediaFiles
 };
 });

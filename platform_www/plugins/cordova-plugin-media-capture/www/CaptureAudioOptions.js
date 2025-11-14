@@ -18,12 +18,12 @@ cordova.define("cordova-plugin-media-capture.CaptureAudioOptions", function(requ
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
 /**
  * Encapsulates all audio capture operation configuration options.
  */
-var CaptureAudioOptions = function(){
+const CaptureAudioOptions = function () {
     // Upper limit of sound clips user can record. Value must be equal or greater than 1.
     this.limit = 1;
     // Maximum duration of a single sound clip in seconds.
